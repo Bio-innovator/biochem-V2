@@ -32,21 +32,6 @@ function HomeContent() {
     if (searchParams.get('register')) setShowRegister(true);
   }, [searchParams]);
 
-  // Quick demo login
-  const demoLogin = async (username: string) => {
-    setLoading(true);
-    setError('');
-    try {
-      const data = await api.post('/api/auth/login', { username, password: '123456' });
-      login(data.token, data.user);
-      window.location.href = '/dashboard';
-    } catch (e: any) {
-      setError(e.message || '登录失败');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
