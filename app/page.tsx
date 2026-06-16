@@ -114,35 +114,7 @@ function HomeContent() {
             >
               注册
             </button>
-          </div>
-
-          {/* Demo Quick Login */}
-          <div className="bg-slate-50 rounded-xl p-4 max-w-lg mx-auto">
-            <p className="text-xs text-slate-500 mb-3">👇 三角色演示账号快速登录（密码均为 123456）</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              <button
-                onClick={() => demoLogin('student01')}
-                disabled={loading}
-                className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
-              >
-                🎓 学生入口
-              </button>
-              <button
-                onClick={() => demoLogin('teacher01')}
-                disabled={loading}
-                className="px-4 py-2 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 transition disabled:opacity-50"
-              >
-                👨‍🏫 教师入口
-              </button>
-              <button
-                onClick={() => demoLogin('admin01')}
-                disabled={loading}
-                className="px-4 py-2 bg-rose-500 text-white text-sm rounded-lg hover:bg-rose-600 transition disabled:opacity-50"
-              >
-                ⚙️ 管理员入口
-              </button>
-            </div>
-          </div>
+          </div>       
         </div>
       </section>
 
