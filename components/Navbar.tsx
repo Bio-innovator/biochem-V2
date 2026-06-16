@@ -38,7 +38,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   // Determine which nav items to show
-  let items = navItems.public;
+  let items: typeof navItems.public = [];
   if (role === 'student') items = navItems.student;
   else if (role === 'teacher') items = navItems.teacher;
   else if (role === 'admin') items = navItems.admin;
@@ -54,6 +54,7 @@ export default function Navbar() {
           </Link>
 
           {/* Nav Links */}
+          {items.length > 0 && (
           <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto">
             {items.map((item) => (
               <Link
@@ -110,6 +111,7 @@ export default function Navbar() {
               </div>
             )}
           </div>
+        )}
         </div>
       </div>
     </nav>
