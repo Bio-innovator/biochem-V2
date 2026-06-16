@@ -256,12 +256,13 @@ function HomeContent() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {units.map((unit) => (
             <div
+              key={unit.id}
               className="bg-white rounded-lg border border-slate-200 p-3 text-center"
             >
               <div className="text-xs font-medium text-teal-600 mb-1">{unit.title}</div>
               <div className="text-sm font-semibold text-slate-800 mb-0.5">{unit.nameZh}</div>
               <div className="text-[10px] text-slate-400">{unit.nameEn}</div>
-            </Link>
+            </div>
           ))}
         </div>
       </section>
