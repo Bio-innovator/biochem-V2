@@ -71,6 +71,7 @@ export default function Navbar() {
               </Link>
             ))}
           </div>
+          )}
 
           {/* Auth Section */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -111,7 +112,6 @@ export default function Navbar() {
               </div>
             )}
           </div>
-        )}
         </div>
       </div>
     </nav>
