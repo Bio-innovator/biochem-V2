@@ -221,32 +221,6 @@ function HomeContent() {
   // ── Not logged in: landing page ──
   return (
     <div className="h-screen flex flex-col bg-white overflow-hidden">
-      {/* ═══════ Top Navigation ═══════ */}
-      <nav className="shrink-0 bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-2 text-slate-900 font-bold text-base sm:text-lg tracking-tight">
-            <span className="text-lg sm:text-xl">🧬</span>
-            <span>Biochem-niche</span>
-          </div>
-          {/* Auth buttons */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              onClick={openLogin}
-              className="px-4 py-1.5 text-sm sm:text-base bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium"
-            >
-              登录
-            </button>
-            <button
-              onClick={openRegister}
-              className="px-4 py-1.5 text-sm sm:text-base border border-teal-600 text-teal-600 rounded-lg hover:bg-teal-50 transition font-medium"
-            >
-              注册
-            </button>
-          </div>
-        </div>
-      </nav>
-
       {/* ═══════ Slide Area ═══════ */}
       <div
         className="flex-1 relative overflow-hidden"
