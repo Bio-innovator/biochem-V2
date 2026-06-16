@@ -270,7 +270,7 @@ function HomeContent() {
 
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white py-6 text-center text-sm text-slate-400">
-        <p>Biochem-niche v2.0 — AP Biology Learning Platform</p>
+        <p>Biochem-niche v2.1 — AP Biology Learning Platform</p>
       </footer>
     </div>
   );
