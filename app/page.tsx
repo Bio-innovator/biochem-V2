@@ -255,10 +255,8 @@ function HomeContent() {
         <h2 className="text-2xl font-bold text-center text-slate-900 mb-8">AP Biology 单元一览</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {units.map((unit) => (
-            <Link
-              key={unit.id}
-              href={`/knowledge?unit=${unit.id}`}
-              className="bg-white rounded-lg border border-slate-200 p-3 hover:border-teal-300 hover:shadow-sm transition text-center"
+            <div
+              className="bg-white rounded-lg border border-slate-200 p-3 text-center"
             >
               <div className="text-xs font-medium text-teal-600 mb-1">{unit.title}</div>
               <div className="text-sm font-semibold text-slate-800 mb-0.5">{unit.nameZh}</div>
