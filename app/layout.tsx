@@ -4,8 +4,8 @@ import { AuthProvider } from '@/components/AuthContext';
 import Navbar from '@/components/Navbar';
 
 export const metadata: Metadata = {
-  title: 'Biochem-niche | AP Biology Learning Platform',
-  description: 'AP Biology learning platform with role-based access control',
+  title: 'Biochem-niche | Biology Learning Platform',
+  description: 'Biology learning platform with quiz and exam',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
