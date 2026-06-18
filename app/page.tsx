@@ -81,7 +81,7 @@ function HomeContent() {
       </p>
       <p className="text-slate-500 mb-10 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
         专为 AP 生物学考试设计的学习管理系统，涵盖 8 个单元的知识点、自测题库、
-        生物词汇表和专业方向探索。支持学生、教师和管理员三种角色。
+        生物词汇表和专业方向探索。支持学生和教师两种角色。
       </p>
       <button
         onClick={() => { setShowLogin(true); setError(''); }}
