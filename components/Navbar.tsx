@@ -11,9 +11,6 @@ const navItems = {
     { href: '/about', label: '介绍', labelEn: 'About' },
   ],
   student: [
-    { href: '/', label: '首页', labelEn: 'Home' },
-    { href: '/story', label: '故事', labelEn: 'Story' },
-    { href: '/about', label: '介绍', labelEn: 'About' },
     { href: '/dashboard', label: '控制台', labelEn: 'Dashboard' },
     { href: '/knowledge', label: '知识点', labelEn: 'Knowledge' },
     { href: '/quiz', label: '小测', labelEn: 'Quiz' },
@@ -21,18 +18,12 @@ const navItems = {
     { href: '/majors', label: '专业', labelEn: 'Majors' },
   ],
   teacher: [
-    { href: '/', label: '首页', labelEn: 'Home' },
-    { href: '/story', label: '故事', labelEn: 'Story' },
-    { href: '/about', label: '介绍', labelEn: 'About' },
     { href: '/dashboard', label: '控制台', labelEn: 'Dashboard' },
     { href: '/classroom', label: '班级', labelEn: 'Classroom' },
     { href: '/knowledge', label: '知识点', labelEn: 'Knowledge' },
     { href: '/quiz', label: '小测', labelEn: 'Quiz' },
   ],
   admin: [
-    { href: '/', label: '首页', labelEn: 'Home' },
-    { href: '/story', label: '故事', labelEn: 'Story' },
-    { href: '/about', label: '介绍', labelEn: 'About' },
     { href: '/dashboard', label: '控制台', labelEn: 'Dashboard' },
     { href: '/admin', label: '管理', labelEn: 'Admin' },
     { href: '/classroom', label: '班级', labelEn: 'Classroom' },
@@ -44,12 +35,16 @@ export default function Navbar() {
   const role = useRole();
   const pathname = usePathname();
 
-  // Determine which nav items to show
   let items: typeof navItems.public = [];
-  if (role === 'student') items = navItems.student;
-  else if (role === 'teacher') items = navItems.teacher;
-  else if (role === 'admin') items = navItems.admin;
-  else items = navItems.public;
+  if (!user) {
+    items = navItems.public;
+  } else if (role === 'student') {
+    items = navItems.student;
+  } else if (role === 'teacher') {
+    items = navItems.teacher;
+  } else if (role === 'admin') {
+    items = navItems.admin;
+  }
 
   return (
     <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
@@ -62,22 +57,24 @@ export default function Navbar() {
           </Link>
 
           {/* Nav Links */}
-          <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto">
-            {items.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
-                  pathname === item.href || pathname?.startsWith(item.href + '/')
-                    ? 'bg-teal-50 text-teal-700'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-              >
-                <span className="sm:hidden">{item.label}</span>
-                <span className="hidden sm:inline">{item.label}</span>
-              </Link>
-            ))}
-          </div>
+          {items.length > 0 && (
+            <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto">
+              {items.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
+                    pathname === item.href || pathname?.startsWith(item.href + '/')
+                      ? 'bg-teal-50 text-teal-700'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  }`}
+                >
+                  <span className="sm:hidden">{item.label}</span>
+                  <span className="hidden sm:inline">{item.label}</span>
+                </Link>
+              ))}
+            </div>
+          )}
 
           {/* Auth Section */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
