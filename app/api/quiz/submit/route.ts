@@ -17,7 +17,7 @@ export async function POST(req: Request) {
           userId: payload.userId,
           unit: unit || 'mixed',
           score,
-          total,
+          totalQuestions,
         },
       });
 
