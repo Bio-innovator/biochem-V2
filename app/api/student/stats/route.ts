@@ -12,7 +12,7 @@ export async function GET(req: Request) {
         id: true,
         unit: true,
         score: true,
-        total: true,
+        totalQuestions: true,
         createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     const avgScore =
       totalQuizzes > 0
         ? Math.round(
-            quizResults.reduce((sum, r) => sum + (r.score / r.total) * 100, 0) / totalQuizzes
+            quizResults.reduce((sum, r) => sum + (r.score / r.totalQuestions) * 100, 0) / totalQuizzes
           )
         : 0;
 
@@ -46,7 +46,7 @@ export async function GET(req: Request) {
         quizResult: { userId: payload.userId },
       },
       select: {
-        correct: true,
+        isCorrect: true,
         quiz: { select: { unit: true } },
       },
     });
@@ -55,7 +55,7 @@ export async function GET(req: Request) {
       const u = a.quiz?.unit || 'unknown';
       if (!unitAccuracy[u]) unitAccuracy[u] = { total: 0, correct: 0 };
       unitAccuracy[u].total++;
-      if (a.correct) unitAccuracy[u].correct++;
+      if (a.isCorrect) unitAccuracy[u].correct++;
     }
 
     const unitStats = Object.entries(unitAccuracy).map(([unit, data]) => ({
