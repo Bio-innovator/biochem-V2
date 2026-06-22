@@ -182,4 +182,5 @@ model Major {
   description String
   careers     String
   skills      String
+  level       String?
 }
