@@ -19,7 +19,7 @@ export async function GET(req: Request) {
         email: true,
         createdAt: true,
         quizResults: {
-          select: { score: true, total: true, createdAt: true },
+          select: { score: true, totalQuestions: true, createdAt: true },
           orderBy: { createdAt: 'desc' },
         },
         errorBook: {
@@ -33,7 +33,7 @@ export async function GET(req: Request) {
       const avgScore =
         totalQuizzes > 0
           ? Math.round(
-              s.quizResults.reduce((sum, r) => sum + (r.score / r.total) * 100, 0) / totalQuizzes
+              s.quizResults.reduce((sum, r) => sum + (r.score / r.totalQuestions) * 100, 0) / totalQuizzes
             )
           : 0;
 
