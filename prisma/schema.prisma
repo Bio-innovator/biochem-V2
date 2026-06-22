@@ -16,6 +16,11 @@ model User {
   status      Status   @default(PENDING)
   displayName String?
   createdAt   DateTime @default(now())
+
+  quizResults       QuizResult[]
+  examResults       ExamResult[]
+  errorBook         ErrorBook[]
+  knowledgeProgress KnowledgeProgress[]
 }
 
 enum Role {
@@ -38,19 +43,128 @@ model Quiz {
   answer        Int
   explanationEn String
   explanationZh String
+
+  quizAnswers QuizAnswer[]
+}
+
+model QuizResult {
+  id             String   @id @default(cuid())
+  userId         String
+  score          Int
+  totalQuestions Int      @map("total")
+  correctCount   Int
+  timeSpent      Int?
+  mode           String?
+  createdAt      DateTime @default(now())
+
+  user    User         @relation(fields: [userId], references: [id])
+  answers QuizAnswer[]
+}
+
+model QuizAnswer {
+  id             String   @id @default(cuid())
+  quizResultId   String
+  userId         String
+  quizId         String
+  selectedOption Int
+  isCorrect      Boolean
+  createdAt      DateTime @default(now())
+
+  quizResult QuizResult @relation(fields: [quizResultId], references: [id], onDelete: Cascade)
+  quiz       Quiz       @relation(fields: [quizId], references: [id])
+}
+
+model ErrorBook {
+  id            String   @id @default(cuid())
+  userId        String
+  quizId        String?
+  question      String
+  userAnswer    Int
+  correctAnswer Int
+  explanation   String
+  unit          String
+  reviewCount   Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model KnowledgeProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  unit      String
+  topic     String
+  completed Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, unit, topic])
+}
+
+model Exam {
+  id            String         @id @default(cuid())
+  year          Int
+  name          String
+  questionCount Int
+  timeLimit     Int            @default(90)
+  pdfUrl        String?
+  createdAt     DateTime       @default(now())
+
+  questions ExamQuestion[]
+  results   ExamResult[]
+}
+
+model ExamQuestion {
+  id             String  @id @default(cuid())
+  examId         String
+  questionNumber Int
+  question       String
+  options        String[]
+  answer         Int
+  imageUrl       String?
+  type           String  @default("MCQ")
+
+  exam    Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
+  answers ExamAnswer[]
+}
+
+model ExamResult {
+  id           String   @id @default(cuid())
+  userId       String
+  examId       String
+  score        Int
+  correctCount Int
+  timeSpent    Int
+  createdAt    DateTime @default(now())
+
+  user    User         @relation(fields: [userId], references: [id])
+  exam    Exam         @relation(fields: [examId], references: [id])
+  answers ExamAnswer[]
+}
+
+model ExamAnswer {
+  id           String @id @default(cuid())
+  examResultId String
+  questionId   String
+  selected     Int
+  correct      Boolean
+
+  examResult ExamResult   @relation(fields: [examResultId], references: [id], onDelete: Cascade)
+  question   ExamQuestion @relation(fields: [questionId], references: [id])
 }
 
 model KnowledgeTopic {
-  id          String   @id @default(cuid())
-  unit        String
-  titleEn     String
-  titleZh     String
-  summaryEn   String
-  summaryZh   String
-  keyPointsEn String[]
-  keyPointsZh String[]
-  source      String?
-  imageUrl    String?
+  id            String   @id @default(cuid())
+  unit          String
+  titleEn       String
+  titleZh       String
+  summaryEn     String
+  summaryZh     String
+  keyPointsEn   String[]
+  keyPointsZh   String[]
+  source        String?
+  imageUrl      String?
 }
 
 model Glossary {
@@ -59,20 +173,13 @@ model Glossary {
   phonetic String?
   meaning  String
   unit     String
-  example  String?
 }
 
 model Major {
-  id            String   @id @default(cuid())
-  nameEn        String
-  nameZh        String
-  level         String
-  descriptionEn String
-  descriptionZh String
-  courses       String[]
-  suitableEn    String?
-  suitableZh    String?
-  careerEn      String?
-  careerZh      String?
-  schools       String?
+  id          String @id @default(cuid())
+  name        String
+  category    String
+  description String
+  careers     String
+  skills      String
 }
