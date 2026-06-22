@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
+import { useAuth } from '@/components/AuthContext';
 
 interface Quiz {
   id: string;
@@ -28,6 +29,7 @@ const units = [
 const optionLabels = ['A', 'B', 'C', 'D'];
 
 export default function QuizPage() {
+  const { token } = useAuth();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedUnit, setSelectedUnit] = useState('all');
   const [questionCount, setQuestionCount] = useState('10');
@@ -42,6 +44,7 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState<{ qid: string; selected: number; correct: boolean }[]>([]);
   const [showExplanation, setShowExplanation] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(0);
@@ -85,6 +88,7 @@ export default function QuizPage() {
     setSelectedAnswer(null);
     setShowExplanation(false);
     setFinished(false);
+    setSubmitting(false);
     setStarted(true);
     if (timedMode) setTimeLeft(30);
   }
@@ -98,6 +102,36 @@ export default function QuizPage() {
     setAnswers((prev) => [...prev, { qid: currentQ.id, selected: idx, correct: isCorrect }]);
   }
 
+  async function submitQuiz(finalAnswers: typeof answers) {
+    if (!token) return;
+    setSubmitting(true);
+    try {
+      const score = finalAnswers.filter((a) => a.correct).length;
+      const total = currentQuestions.length;
+      await fetch('/api/quiz/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          unit: selectedUnit === 'all' ? 'mixed' : selectedUnit,
+          answers: finalAnswers.map((a) => ({
+            quizId: a.qid,
+            selected: a.selected,
+            correct: a.correct,
+          })),
+          score,
+          total,
+        }),
+      });
+    } catch (e) {
+      console.error('Failed to submit quiz', e);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   function handleNext() {
     if (currentIndex < currentQuestions.length - 1) {
       setCurrentIndex((i) => i + 1);
@@ -105,7 +139,19 @@ export default function QuizPage() {
       setShowExplanation(false);
       if (timedMode) setTimeLeft(30);
     } else {
+      // Finalize and submit
+      const finalAnswers = [...answers];
+      // If user hasn't answered the last question, mark as wrong
+      if (finalAnswers.length < currentIndex + 1 && currentQuestions[currentIndex]) {
+        finalAnswers.push({
+          qid: currentQuestions[currentIndex].id,
+          selected: -1,
+          correct: false,
+        });
+      }
+      setAnswers(finalAnswers);
       setFinished(true);
+      submitQuiz(finalAnswers);
     }
   }
 
@@ -117,6 +163,7 @@ export default function QuizPage() {
     setAnswers([]);
     setSelectedAnswer(null);
     setShowExplanation(false);
+    setSubmitting(false);
   }
 
   // Config screen
@@ -213,6 +260,9 @@ export default function QuizPage() {
             <div className="text-sm text-slate-400">
               {percentage >= 80 ? '🎉 优秀！' : percentage >= 60 ? '👍 不错，继续加油！' : '📚 建议多复习知识点'}
             </div>
+            {submitting && (
+              <div className="mt-2 text-xs text-slate-400">正在保存成绩...</div>
+            )}
           </div>
 
           {/* Review */}
@@ -330,9 +380,10 @@ export default function QuizPage() {
           {showExplanation && (
             <button
               onClick={handleNext}
-              className="w-full py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium"
+              disabled={submitting}
+              className="w-full py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium disabled:opacity-50"
             >
-              {currentIndex < currentQuestions.length - 1 ? '下一题' : '查看结果'}
+              {currentIndex < currentQuestions.length - 1 ? '下一题' : submitting ? '保存中...' : '查看结果'}
             </button>
           )}
         </div>

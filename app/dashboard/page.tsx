@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useAuth, useRole } from '@/components/AuthContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const unitColors: Record<string, string> = {
@@ -17,33 +17,126 @@ const unitColors: Record<string, string> = {
 };
 
 const studentLinks = [
-  { href: '/knowledge', emoji: '📚', title: '知识点学习', desc: '8 个单元，53 个知识点', color: 'bg-blue-50 border-blue-200' },
-  { href: '/quiz', emoji: '📝', title: '小测平台', desc: '40 道题，支持限时模式', color: 'bg-green-50 border-green-200' },
-  { href: '/glossary', emoji: '📖', title: '生物词典', desc: '202+ 专业词汇', color: 'bg-purple-50 border-purple-200' },
-  { href: '/majors', emoji: '🎓', title: '专业探索', desc: '生物相关专业介绍', color: 'bg-amber-50 border-amber-200' },
+  {
+    href: '/knowledge',
+    emoji: '📚',
+    title: '知识点学习',
+    desc: '8 个单元，53 个知识点',
+    color: 'bg-blue-50 border-blue-200',
+  },
+  {
+    href: '/quiz',
+    emoji: '📝',
+    title: '小测平台',
+    desc: '40 道题，支持限时模式',
+    color: 'bg-green-50 border-green-200',
+  },
+  {
+    href: '/exams',
+    emoji: '📋',
+    title: 'AP 真题模考',
+    desc: '历年真题，90 分钟限时',
+    color: 'bg-indigo-50 border-indigo-200',
+  },
+  {
+    href: '/glossary',
+    emoji: '📖',
+    title: '生物词典',
+    desc: '202+ 专业词汇',
+    color: 'bg-purple-50 border-purple-200',
+  },
+  {
+    href: '/majors',
+    emoji: '🎓',
+    title: '专业探索',
+    desc: '生物相关专业介绍',
+    color: 'bg-amber-50 border-amber-200',
+  },
 ];
 
 const teacherLinks = [
-  { href: '/classroom', emoji: '👨‍🏫', title: '班级管理', desc: '学生名单与薄弱知识点', color: 'bg-orange-50 border-orange-200' },
-  { href: '/knowledge', emoji: '📚', title: '知识点浏览', desc: '查看所有知识点', color: 'bg-blue-50 border-blue-200' },
-  { href: '/quiz', emoji: '📝', title: '小测题目', desc: '查看题目与解析', color: 'bg-green-50 border-green-200' },
+  {
+    href: '/classroom',
+    emoji: '👨‍🏫',
+    title: '班级管理',
+    desc: '学生名单与薄弱知识点',
+    color: 'bg-orange-50 border-orange-200',
+  },
+  {
+    href: '/knowledge',
+    emoji: '📚',
+    title: '知识点浏览',
+    desc: '查看所有知识点',
+    color: 'bg-blue-50 border-blue-200',
+  },
+  {
+    href: '/quiz',
+    emoji: '📝',
+    title: '小测题目',
+    desc: '查看题目与解析',
+    color: 'bg-green-50 border-green-200',
+  },
 ];
 
 const adminLinks = [
-  { href: '/admin', emoji: '⚙️', title: '系统管理', desc: '用户审核与数据统计', color: 'bg-red-50 border-red-200' },
-  { href: '/classroom', emoji: '📊', title: '班级概览', desc: '查看所有班级数据', color: 'bg-orange-50 border-orange-200' },
+  {
+    href: '/admin',
+    emoji: '⚙️',
+    title: '系统管理',
+    desc: '用户审核与数据统计',
+    color: 'bg-red-50 border-red-200',
+  },
+  {
+    href: '/classroom',
+    emoji: '📊',
+    title: '班级概览',
+    desc: '查看所有班级数据',
+    color: 'bg-orange-50 border-orange-200',
+  },
 ];
 
 export default function Dashboard() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, token } = useAuth();
   const role = useRole();
   const router = useRouter();
+
+  const [stats, setStats] = useState({
+    totalQuizzes: 0,
+    avgScore: 0,
+    errorCount: 0,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     if (!isLoading && !user) {
       router.push('/?login=1');
     }
   }, [user, isLoading, router]);
+
+  useEffect(() => {
+    if (!token || role !== 'student') {
+      setStatsLoading(false);
+      return;
+    }
+    fetch('/api/student/stats', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error('获取统计数据失败');
+        return res.json();
+      })
+      .then((data) => {
+        setStats({
+          totalQuizzes: data.totalQuizzes || 0,
+          avgScore: data.avgScore || 0,
+          errorCount: (data.errorBook || []).length,
+        });
+        setStatsLoading(false);
+      })
+      .catch(() => {
+        setStatsLoading(false);
+      });
+  }, [token, role]);
 
   if (isLoading) {
     return (
@@ -57,8 +150,16 @@ export default function Dashboard() {
 
   let links = studentLinks;
   let welcomeText = '学生控制台';
-  if (role === 'teacher') { links = teacherLinks; welcomeText = '教师控制台'; }
-  if (role === 'admin') { links = adminLinks; welcomeText = '管理员控制台'; }
+  if (role === 'teacher') {
+    links = teacherLinks;
+    welcomeText = '教师控制台';
+  }
+  if (role === 'admin') {
+    links = adminLinks;
+    welcomeText = '管理员控制台';
+  }
+
+  const isStudent = role === 'student';
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4">
@@ -66,7 +167,9 @@ export default function Dashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-1">{welcomeText}</h1>
-          <p className="text-slate-500">欢迎回来，{user.displayName || user.username}！</p>
+          <p className="text-slate-500">
+            欢迎回来，{user.displayName || user.username}！
+          </p>
         </div>
 
         {/* Quick Links */}
@@ -86,17 +189,57 @@ export default function Dashboard() {
 
         {/* Stats Summary */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-          {[
-            { label: '知识点', value: '53', unit: '个' },
-            { label: '小测题目', value: '40', unit: '道' },
-            { label: '词汇量', value: '202+', unit: '个' },
-            { label: '专业方向', value: '10', unit: '个' },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-white rounded-lg border border-slate-200 p-4 text-center">
-              <div className="text-2xl font-bold text-teal-600">{stat.value}</div>
-              <div className="text-xs text-slate-500">{stat.label}{stat.unit}</div>
-            </div>
-          ))}
+          {isStudent
+            ? [
+                {
+                  label: '已完成小测',
+                  value: statsLoading ? '...' : stats.totalQuizzes.toString(),
+                  unit: '次',
+                },
+                {
+                  label: '平均正确率',
+                  value: statsLoading ? '...' : `${stats.avgScore}%`,
+                  unit: '',
+                },
+                {
+                  label: '错题本',
+                  value: statsLoading ? '...' : stats.errorCount.toString(),
+                  unit: '道',
+                },
+                {
+                  label: '专业方向',
+                  value: '10',
+                  unit: '个',
+                },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="bg-white rounded-lg border border-slate-200 p-4 text-center"
+                >
+                  <div className="text-2xl font-bold text-teal-600">{stat.value}</div>
+                  <div className="text-xs text-slate-500">
+                    {stat.label}
+                    {stat.unit}
+                  </div>
+                </div>
+              ))
+            : [
+                { label: '知识点', value: '53', unit: '个' },
+                { label: '小测题目', value: '40', unit: '道' },
+                { label: '词汇量', value: '202+', unit: '个' },
+                { label: '专业方向', value: '10', unit: '个' },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="bg-white rounded-lg border border-slate-200 p-4 text-center"
+                >
+                  <div className="text-2xl font-bold text-teal-600">{stat.value}</div>
+                  <div className="text-xs text-slate-500">
+                    {stat.label}
+                    {stat.unit}
+                  </div>
+                </div>
+              ))}
         </div>
 
         {/* Unit Quick Access */}
