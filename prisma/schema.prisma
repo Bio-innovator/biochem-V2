@@ -178,10 +178,10 @@ model Glossary {
 
 model Major {
   id          String @id @default(cuid())
-  name        String
-  category    String
-  description String
-  careers     String
-  skills      String
+  nameEn      String
+  nameZh      String
   level       String?
+  description String?
+  careers     String?
+  skills      String?
 }
