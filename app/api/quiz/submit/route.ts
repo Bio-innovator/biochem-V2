@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyAuth } from '@/lib/auth';
 
+interface SubmitAnswer {
+  quizId: string;
+  selectedOption: number;
+  isCorrect: boolean;
+}
+
 export async function POST(req: Request) {
   try {
     const payload = await verifyAuth(req as unknown as import('next/server').NextRequest);
@@ -23,16 +29,17 @@ export async function POST(req: Request) {
       });
 
       await tx.quizAnswer.createMany({
-        data: answers.map((a: { quizId: string; selected: number; correct: boolean }) => ({
+        data: answers.map((a: SubmitAnswer) => ({
           quizResultId: quizResult.id,
+          userId: payload.userId,
           quizId: a.quizId,
-          selected: a.selected,
-          correct: a.correct,
+          selectedOption: a.selectedOption,
+          isCorrect: a.isCorrect,
         })),
       });
 
       for (const a of answers) {
-        if (!a.correct) {
+        if (!a.isCorrect) {
           const quiz = await tx.quiz.findUnique({
             where: { id: a.quizId },
             select: { question: true, explanationZh: true, unit: true, answer: true },
@@ -52,7 +59,7 @@ export async function POST(req: Request) {
                   userId: payload.userId,
                   quizId: a.quizId,
                   question: quiz.question,
-                  userAnswer: a.selected,
+                  userAnswer: a.selectedOption,
                   correctAnswer: quiz.answer,
                   explanation: quiz.explanationZh,
                   unit: quiz.unit,
@@ -70,7 +77,7 @@ export async function POST(req: Request) {
       message: '提交成功',
       resultId: result.id,
       score,
-      total,
+      totalQuestions,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : '提交失败';
