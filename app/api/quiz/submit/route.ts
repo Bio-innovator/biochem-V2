@@ -5,7 +5,7 @@ import { verifyAuth } from '@/lib/auth';
 export async function POST(req: Request) {
   try {
     const payload = await verifyAuth(req as unknown as import('next/server').NextRequest);
-    const { unit, answers, score, total } = await req.json();
+    const { unit, answers, score, totalQuestions, correctCount } = await req.json();
 
     if (!answers || !Array.isArray(answers) || answers.length === 0) {
       return NextResponse.json({ error: '参数不完整' }, { status: 400 });
