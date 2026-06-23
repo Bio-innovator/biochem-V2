@@ -18,6 +18,7 @@ export async function POST(req: Request) {
           unit: unit || 'mixed',
           score,
           totalQuestions,
+          correctCount: correctCount || 0,
         },
       });
 
