@@ -8,14 +8,9 @@ interface Major {
   nameEn: string;
   nameZh: string;
   level: string;
-  descriptionEn: string;
-  descriptionZh: string;
-  courses: string[];
-  suitableEn: string | null;
-  suitableZh: string | null;
-  careerEn: string | null;
-  careerZh: string | null;
-  schools: string | null;
+  description: string | null;
+  careers: string | null;
+  skills: string | null;
 }
 
 export default function MajorsPage() {
@@ -97,19 +92,17 @@ export default function MajorsPage() {
                   {major.level === 'undergraduate' ? '本科' : '研究生'}
                 </span>
               </div>
-              <p className="text-sm text-slate-600 line-clamp-2">{major.descriptionZh}</p>
-              <div className="mt-3 flex flex-wrap gap-1">
-                {major.courses.slice(0, 3).map((c, i) => (
-                  <span key={i} className="text-[10px] px-2 py-0.5 bg-slate-50 text-slate-500 rounded">
-                    {c}
-                  </span>
-                ))}
-                {major.courses.length > 3 && (
-                  <span className="text-[10px] px-2 py-0.5 bg-slate-50 text-slate-400 rounded">
-                    +{major.courses.length - 3}
-                  </span>
-                )}
-              </div>
+              <p className="text-sm text-slate-600 line-clamp-2">{major.description || '暂无介绍'}</p>
+              
+              {major.careers && (
+                <div className="mt-3 flex flex-wrap gap-1">
+                  {major.careers.split(/[,，]/).slice(0, 3).map((c, i) => (
+                    <span key={i} className="text-[10px] px-2 py-0.5 bg-slate-50 text-slate-500 rounded">
+                      {c.trim()}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -139,49 +132,20 @@ export default function MajorsPage() {
             <div className="space-y-4">
               <div>
                 <h4 className="text-xs font-medium text-teal-600 mb-1">专业介绍</h4>
-                <p className="text-sm text-slate-700">{selectedMajor.descriptionZh}</p>
+                <p className="text-sm text-slate-700">{selectedMajor.description || '暂无介绍'}</p>
               </div>
 
-              <div>
-                <h4 className="text-xs font-medium text-teal-600 mb-1">Description</h4>
-                <p className="text-sm text-slate-600">{selectedMajor.descriptionEn}</p>
-              </div>
-
-              {selectedMajor.suitableZh && (
+              {selectedMajor.skills && (
                 <div>
-                  <h4 className="text-xs font-medium text-teal-600 mb-1">适合人群</h4>
-                  <p className="text-sm text-slate-700">{selectedMajor.suitableZh}</p>
+                  <h4 className="text-xs font-medium text-teal-600 mb-1">核心技能</h4>
+                  <p className="text-sm text-slate-700">{selectedMajor.skills}</p>
                 </div>
               )}
 
-              <div>
-                <h4 className="text-xs font-medium text-teal-600 mb-1.5">核心课程</h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedMajor.courses.map((c, i) => (
-                    <span key={i} className="text-xs px-2.5 py-1 bg-slate-50 text-slate-600 rounded-md border border-slate-100">
-                      {c}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {selectedMajor.careerZh && (
+              {selectedMajor.careers && (
                 <div>
                   <h4 className="text-xs font-medium text-teal-600 mb-1">就业方向</h4>
-                  <p className="text-sm text-slate-700">{selectedMajor.careerZh}</p>
-                </div>
-              )}
-
-              {selectedMajor.schools && (
-                <div>
-                  <h4 className="text-xs font-medium text-teal-600 mb-1.5">推荐院校</h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {selectedMajor.schools.split(', ').map((s, i) => (
-                      <span key={i} className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded">
-                        {s}
-                      </span>
-                    ))}
-                  </div>
+                  <p className="text-sm text-slate-700">{selectedMajor.careers}</p>
                 </div>
               )}
             </div>
