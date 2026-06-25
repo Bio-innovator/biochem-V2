@@ -11,6 +11,9 @@ export default function StoryPage() {
       <p className="text-2xl sm:text-4xl font-medium text-slate-900 leading-relaxed">
         niche 的发音是 /nɪtʃ/，翻译做 生态龛
       </p>
+      <p className="text-sm text-slate-400 mt-4 leading-relaxed">
+        The pronunciation of niche is /nɪtʃ/, translated as 生态龛 (shēngtài kān)
+      </p>
     </div>,
 
     // Page 2
@@ -21,6 +24,11 @@ export default function StoryPage() {
         <br />
         （真实事件）
       </p>
+      <p className="text-sm text-slate-400 mt-4 leading-relaxed">
+        Beginners might say /nɪk/, or call the last word in Chinese "lóng" (the right name is kàn).
+        <br />
+        (True story)
+      </p>
     </div>,
 
     // Page 3
@@ -28,6 +36,11 @@ export default function StoryPage() {
       <div className="text-6xl sm:text-7xl mb-12">💡</div>
       <p className="text-2xl sm:text-4xl font-medium text-slate-900 leading-relaxed">
         这样的事情难免会发生，而我们的网站也因此得名：
+        <br />
+        Biochem-niche
+      </p>
+      <p className="text-sm text-slate-400 mt-4 leading-relaxed">
+        Such things happen inevitably, and that's how our website got its name:
         <br />
         Biochem-niche
       </p>
@@ -41,11 +54,17 @@ export default function StoryPage() {
         <br />
         让没有资源学生获得更公平的学习机会
       </p>
+      <p className="text-sm text-slate-400 mb-10 leading-relaxed">
+        We are dedicated to helping resourceful students master biology knowledge more solidly,
+        <br />
+        and giving under-resourced students a fairer chance to learn.
+      </p>
       <Link
         href="/?login=1"
         className="inline-block px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-lg shadow-lg hover:shadow-xl"
       >
         登录
+        <span className="block text-sm font-normal opacity-80 mt-0.5">Login</span>
       </Link>
     </div>,
   ];
