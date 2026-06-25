@@ -12,7 +12,7 @@ export default function StoryPage() {
         niche 的发音是 /nɪtʃ/，中文叫做 生态龛
       </p>
       <p className="text-sm text-slate-400 mt-4 leading-relaxed">
-        The pronunciation of niche is /nɪtʃ/,  it is called shēngtài kān in Chinese.
+        The pronunciation of niche is /nɪtʃ/,  which is called shēngtài kān in Chinese.
       </p>
     </div>,
 
