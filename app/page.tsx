@@ -25,7 +25,7 @@ const features = [
   { emoji: '📖', title: '生物词典', desc: '202+ 专业词汇，音标、释义、例句齐全' },
   { emoji: '🎓', title: '专业探索', desc: '本科及研究生生物相关专业介绍与课程规划' },
   { emoji: '📊', title: '班级统计', desc: '班级概览、学生名单、薄弱知识点统计' },
-  { emoji: '📝', title: '题目测试', desc: '生物题目、在线模考、成绩分析' },
+  { emoji: '✏️', title: '题目测试', desc: '生物题目、在线模考、成绩分析' },
 ];
 
 function HomeContent() {
