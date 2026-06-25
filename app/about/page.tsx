@@ -9,13 +9,13 @@ export default function AboutPage() {
     <div key="page1" className="text-center max-w-3xl mx-auto">
       <div className="text-6xl sm:text-7xl mb-8">👨‍💻</div>
       <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
-        Ivan
+        Ivan Wang
       </h1>
       <p className="text-xl sm:text-2xl text-teal-600 mb-4 font-medium">
         开发者
       </p>
       <p className="text-lg text-slate-500 leading-relaxed">
-        本网站由北京师范大学附属中学国际部学生 <span className="font-semibold text-slate-700">Ivan</span> 制作
+        本网站由北京师范大学附属中学国际部学生 <span className="font-semibold text-slate-700">Ivan Wang</span> 制作
       </p>
     </div>,
 
@@ -29,7 +29,7 @@ export default function AboutPage() {
         项目式学习
       </p>
       <p className="text-lg text-slate-500 leading-relaxed">
-        本网站源于 <span className="font-semibold text-slate-700">AP 生物学 PBL 项目式学习</span>
+        本网站源于 <span className="font-semibold text-slate-700">AP 生物学课程 PBL 项目式学习</span>
         <br />
         将课堂所学转化为实际产品，用技术赋能教育。
       </p>
@@ -42,11 +42,11 @@ export default function AboutPage() {
         北京师范大学附属中学
       </h1>
       <p className="text-xl sm:text-2xl text-teal-600 mb-4 font-medium">
-        国际部 AP 生物学
+        为本网站应用社区
       </p>
       <p className="text-lg text-slate-500 leading-relaxed">
         目前本网站仅服务于<span className="font-semibold text-slate-700">北京师范大学附属中学国际部</span>的
-        <span className="font-semibold text-slate-700">AP生物学</span>课程教学。
+        <span className="font-semibold text-slate-700">生物学社区</span>。
       </p>
     </div>,
 
