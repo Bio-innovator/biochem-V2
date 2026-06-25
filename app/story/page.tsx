@@ -17,7 +17,9 @@ export default function AboutPage() {
         本网站由北京师范大学附属中学国际部学生 Ivan Wang 制作
       </p>
       <p className="text-sm text-slate-400 mt-2 leading-relaxed">
-        This website was developed by Ivan Wang, a student from the High School Affiliated to Beijing Normal University, Inernational Department.
+        This website was developed by Ivan Wang, 
+        <br />
+        a student from the High School Affiliated to Beijing Normal University, Inernational Department.
       </p>
     </div>,
 
@@ -56,12 +58,13 @@ export default function AboutPage() {
         the High School Affiliated to Beijing Normal University, Inernational Department
       </p>
       <p className="text-lg text-slate-500 leading-relaxed">
-        目前本网站仅服务于<span className="font-semibold text-slate-700">北京师范大学附属中学国际部</span>的
+        目前本网站仅服务于<span className="font-semibold text-slate-700">北京师范大学附属中学</span>的
         <span className="font-semibold text-slate-700">AP生物学</span>课程教学。
       </p>
       <p className="text-sm text-slate-400 mt-2 leading-relaxed">
-        Currently, this website only serves the <span className="font-semibold text-slate-500">AP Biology</span> course of the
-        <span className="font-semibold text-slate-500">International Division of Beijing Normal University Affiliated High School</span>.
+        Currently, this website only serves the <span className="font-semibold text-slate-500">AP Biology</span> course of
+        <br />
+        <span className="font-semibold text-slate-500">the High School Affiliated to Beijing Normal University, Inernational Department</span>.
       </p>
     </div>,
 
