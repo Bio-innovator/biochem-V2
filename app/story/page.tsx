@@ -17,7 +17,9 @@ export default function StoryPage() {
     <div key="page2" className="text-center max-w-4xl mx-auto">
       <div className="text-6xl sm:text-7xl mb-12">😅</div>
       <p className="text-2xl sm:text-4xl font-medium text-slate-900 leading-relaxed">
-        初学者可能会发出 /nɪk/，或用中文读作生态 "lóng"（真实事件）
+        初学者可能会发出 /nɪk/，或用中文读作生态 "lóng"
+        <br />
+        （真实事件）
       </p>
     </div>,
 
@@ -25,7 +27,9 @@ export default function StoryPage() {
     <div key="page3" className="text-center max-w-4xl mx-auto">
       <div className="text-6xl sm:text-7xl mb-12">💡</div>
       <p className="text-2xl sm:text-4xl font-medium text-slate-900 leading-relaxed">
-        这样的事情难免会发生，而我们的网站也因此得名：Biochem-niche
+        这样的事情难免会发生，而我们的网站也因此得名：
+        <br />
+        Biochem-niche
       </p>
     </div>,
 
