@@ -48,7 +48,7 @@ export default function AboutPage() {
         目前本网站仅服务于<span className="font-semibold text-slate-700">北京师范大学附属中学国际部</span>的
         <span className="font-semibold text-slate-700">AP生物学</span>课程教学。
       </p>
-    </div>
+    </div>,
 
     // Page 4: Advisor
     <div key="page4" className="text-center max-w-3xl mx-auto">
