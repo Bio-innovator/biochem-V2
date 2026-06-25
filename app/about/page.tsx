@@ -36,24 +36,31 @@ export default function AboutPage() {
     </div>,
 
     // Page 3: Service scope
-    <div key="page3" className="text-center max-w-4xl mx-auto">
+    <div key="page3" className="text-center max-w-3xl mx-auto">
       <div className="text-6xl sm:text-7xl mb-8">🏫</div>
-      <p className="text-2xl sm:text-4xl font-medium text-slate-900 leading-relaxed">
-        目前本网站只服务于北京师范大学附属中学国际部AP生物学教学。
+      <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
+        北京师范大学附属中学
+      </h1>
+      <p className="text-xl sm:text-2xl text-teal-600 mb-4 font-medium">
+        国际部 AP 生物学
       </p>
-    </div>,
+      <p className="text-lg text-slate-500 leading-relaxed">
+        目前本网站仅服务于<span className="font-semibold text-slate-700">北京师范大学附属中学国际部</span>的
+        <span className="font-semibold text-slate-700">AP生物学</span>课程教学。
+      </p>
+    </div>
 
     // Page 4: Advisor
     <div key="page4" className="text-center max-w-3xl mx-auto">
       <div className="text-6xl sm:text-7xl mb-8">👩‍🏫</div>
       <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
-        付馨悦
+        付老师
       </h1>
       <p className="text-xl sm:text-2xl text-teal-600 mb-4 font-medium">
         指导老师
       </p>
       <p className="text-lg text-slate-500 leading-relaxed">
-        感谢 <span className="font-semibold text-slate-700">付馨悦</span> 老师的悉心指导
+        感谢 <span className="font-semibold text-slate-700">付老师</span> 的悉心指导
         <br />
         让这个项目从想法变为现实。
       </p>
