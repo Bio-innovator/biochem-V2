@@ -37,7 +37,9 @@ export default function StoryPage() {
     <div key="page4" className="text-center max-w-4xl mx-auto">
       <div className="text-6xl sm:text-7xl mb-12">🎯</div>
       <p className="text-2xl sm:text-4xl font-medium text-slate-900 leading-relaxed mb-12">
-        我们致力于让有资源学生更牢固地掌握生物知识点，让没有资源学生获得更公平的学习机会
+        我们致力于让有资源学生更牢固地掌握生物知识点，
+        <br />
+        让没有资源学生获得更公平的学习机会
       </p>
       <Link
         href="/?login=1"
