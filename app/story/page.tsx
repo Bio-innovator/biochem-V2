@@ -9,10 +9,10 @@ export default function StoryPage() {
     <div key="page1" className="text-center max-w-4xl mx-auto">
       <div className="text-6xl sm:text-7xl mb-12">🔊</div>
       <p className="text-xl sm:text-2xl font-medium text-slate-900 leading-relaxed">
-        niche 的发音是 /nɪtʃ/，翻译做 生态龛
+        niche 的发音是 /nɪtʃ/，中文叫做 生态龛
       </p>
       <p className="text-sm text-slate-400 mt-4 leading-relaxed">
-        The pronunciation of niche is /nɪtʃ/, translated as 生态龛 (shēngtài kān)
+        The pronunciation of niche is /nɪtʃ/,  it is called shēngtài kān in Chinese.
       </p>
     </div>,
 
@@ -25,7 +25,7 @@ export default function StoryPage() {
         （真实事件）
       </p>
       <p className="text-sm text-slate-400 mt-4 leading-relaxed">
-        Beginners might say /nɪk/, or call the last word in Chinese "lóng" (the right name is kàn).
+        Beginners might say /nɪk/, or call the last word in Chinese "lóng".
         <br />
         (True story)
       </p>
@@ -52,12 +52,14 @@ export default function StoryPage() {
       <p className="text-xl sm:text-2xl font-medium text-slate-900 leading-relaxed mb-12">
         我们致力于让有资源学生更牢固地掌握生物知识点，
         <br />
-        让没有资源学生获得更公平的学习机会
+        让没有资源学生获得更公平的学习机会，找到属于自己的“niche”
       </p>
       <p className="text-sm text-slate-400 mb-10 leading-relaxed">
         We are dedicated to helping resourceful students master biology knowledge more solidly,
         <br />
-        and giving under-resourced students a fairer chance to learn.
+        and giving students without resources fairer access to learning
+        <br />
+        —so that every student can find their own "niche."
       </p>
       <Link
         href="/?login=1"
