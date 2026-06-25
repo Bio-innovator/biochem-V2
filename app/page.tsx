@@ -170,10 +170,13 @@ function HomeContent() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-slate-900">登录</h2>
-              <p className="text-xs text-slate-400 mt-1">Login</p>
+              <div className="flex items-baseline gap-2">
+                <h2 className="text-xl font-bold text-slate-900">登录</h2>
+                <span className="text-xs text-slate-400">Login</span>
+              </div>
               <button onClick={() => setShowLogin(false)} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
+            
             {error && <p className="text-red-500 text-sm mb-3 bg-red-50 p-2 rounded">{error}</p>}
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
