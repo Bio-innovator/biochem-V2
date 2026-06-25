@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyAuth } from '@/lib/auth';
+import { verifyToken } from '@/lib/auth';
 
 export async function GET(req: Request) {
   try {
-    const payload = await verifyAuth(req as unknown as import('next/server').NextRequest);
+    const token = req.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 });
+    }
+
+    const payload = verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: 'Token 无效' }, { status: 401 });
+    }
 
     if (payload.role !== 'TEACHER' && payload.role !== 'ADMIN') {
       return NextResponse.json({ error: '无权访问' }, { status: 403 });
@@ -18,61 +26,29 @@ export async function GET(req: Request) {
         displayName: true,
         email: true,
         createdAt: true,
-        quizResults: {
-          select: { score: true, totalQuestions: true, createdAt: true },
-          orderBy: { createdAt: 'desc' },
-        },
-        errorBook: {
-          select: { unit: true, question: true },
-        },
       },
     });
 
-    const studentData = students.map((s) => {
-      const totalQuizzes = s.quizResults.length;
-      const avgScore =
-        totalQuizzes > 0
-          ? Math.round(
-              s.quizResults.reduce((sum, r) => sum + (r.score / r.totalQuestions) * 100, 0) / totalQuizzes
-            )
-          : 0;
-
-      const unitErrorCount: Record<string, number> = {};
-      for (const e of s.errorBook) {
-        unitErrorCount[e.unit] = (unitErrorCount[e.unit] || 0) + 1;
-      }
-      const weakUnit =
-        Object.entries(unitErrorCount).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
-
-      return {
-        id: s.id,
-        name: s.displayName || s.username,
-        email: s.email,
-        quizzes: totalQuizzes,
-        avgScore,
-        weakUnit,
-      };
-    });
-
-    const allErrors = await prisma.errorBook.findMany({
-      select: { unit: true },
-    });
-    const unitCount: Record<string, number> = {};
-    for (const e of allErrors) {
-      unitCount[e.unit] = (unitCount[e.unit] || 0) + 1;
-    }
-    const weakAreas = Object.entries(unitCount)
-      .map(([unit, students]) => ({ unit, students }))
-      .sort((a, b) => b.students - a.students)
-      .slice(0, 8);
+    const studentData = students.map((s) => ({
+      id: s.id,
+      name: s.displayName || s.username,
+      email: s.email,
+      quizzes: 0,
+      avgScore: 0,
+      weakUnit: '-',
+    }));
 
     return NextResponse.json({
       students: studentData,
-      weakAreas,
+      weakAreas: [],
       totalStudents: students.length,
+      totalQuizzes: 0,
     });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : '获取班级数据失败';
-    return NextResponse.json({ error: message }, { status: 401 });
+  } catch (err: any) {
+    console.error('Classroom API error:', err);
+    return NextResponse.json(
+      { error: err.message || '获取班级数据失败' },
+      { status: 500 }
+    );
   }
 }
