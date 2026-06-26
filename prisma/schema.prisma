@@ -122,9 +122,11 @@ model ExamQuestion {
   questionNumber Int
   question       String
   options        String[]
-  answer         Int
+  answer         Int?     // ← 加 ? 允许 NULL（FRQ 用）
+  explanation    String?  // ← 新增
   imageUrl       String?
-  type           String  @default("MCQ")
+  type           String   @default("MCQ")
+  unit           String?  // ← 新增
 
   exam    Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
   answers ExamAnswer[]
