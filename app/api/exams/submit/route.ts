@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyAuth } from '@/lib/auth';
+import { verifyToken } from '@/lib/auth';
 
 interface SubmitAnswer {
   questionId: string;
@@ -9,7 +9,16 @@ interface SubmitAnswer {
 
 export async function POST(req: Request) {
   try {
-    const payload = await verifyAuth(req as unknown as import('next/server').NextRequest);
+    const token = req.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 });
+    }
+
+    const payload = verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ error: 'Token 无效' }, { status: 401 });
+    }
+
     const { examId, answers, timeSpent } = await req.json();
 
     if (!examId || !answers || !Array.isArray(answers)) {
@@ -70,6 +79,6 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : '提交失败';
-    return NextResponse.json({ error: message }, { status: 401 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
