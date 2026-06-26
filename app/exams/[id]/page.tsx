@@ -1,476 +1,428 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { useAuth } from '@/components/AuthContext';
-import { useRouter, useParams } from 'next/navigation';
-import Link from 'next/link';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'next/navigation';
+import { api } from '@/lib/api';
 
-interface Question {
+interface ExamQuestion {
   id: string;
   questionNumber: number;
   question: string;
   options: string[];
+  answer: number | null;
+  explanation: string | null;
   imageUrl: string | null;
   type: string;
+  unit: string | null;
 }
 
 interface Exam {
   id: string;
-  year: number;
   name: string;
+  year: number;
   timeLimit: number;
-  questions: Question[];
-}
-
-interface AnswerDetail {
-  questionId: string;
-  questionNumber: number;
-  selected: number;
-  correct: boolean;
-  correctAnswer: number;
-  question: string;
-  options: string[];
+  questionCount: number;
+  questions: ExamQuestion[];
 }
 
 export default function ExamPage() {
-  const { user, isLoading, token } = useAuth();
-  const router = useRouter();
   const params = useParams();
   const examId = params.id as string;
 
   const [exam, setExam] = useState<Exam | null>(null);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(90 * 60);
-  const [examFinished, setExamFinished] = useState(false);
-  const [result, setResult] = useState<{
-    score: number;
-    correctCount: number;
-    totalQuestions: number;
-    details: AnswerDetail[];
-  } | null>(null);
-  const [showExitConfirm, setShowExitConfirm] = useState(false);
-
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const examFinishedRef = useRef(false);
-
-  useEffect(() => {
-    examFinishedRef.current = examFinished;
-  }, [examFinished]);
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push('/?login=1');
-    }
-  }, [user, isLoading, router]);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState(0);
+  const [marked, setMarked] = useState<Set<number>>(new Set());
+  const [hidden, setHidden] = useState(false);
+  const [showDirections, setShowDirections] = useState(false);
 
   useEffect(() => {
     if (!examId) return;
-    fetch(`/api/exams/${examId}`)
-      .then((res) => res.json())
+    api.get(`/api/exams/${examId}`)
       .then((data) => {
-        if (data.error) {
-          router.push('/exams');
-          return;
-        }
         setExam(data);
         setTimeLeft((data.timeLimit || 90) * 60);
         setLoading(false);
       })
-      .catch(() => router.push('/exams'));
-  }, [examId, router]);
+      .catch(() => setLoading(false));
+  }, [examId]);
 
   useEffect(() => {
-    if (examFinished || !exam) return;
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          handleSubmit(true);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [exam, examFinished]);
+    if (!exam || timeLeft <= 0 || submitted) return;
+    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    return () => clearInterval(timer);
+  }, [exam, timeLeft, submitted]);
 
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!examFinishedRef.current && exam) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [exam]);
+  const submitExam = useCallback(() => {
+    if (!exam) return;
+    let correct = 0;
+    const mcqList = exam.questions.filter((q) => q.type === 'MCQ');
+    mcqList.forEach((q) => {
+      if (answers[q.questionNumber] === q.answer) correct++;
+    });
+    setScore(correct);
+    setSubmitted(true);
+  }, [exam, answers]);
 
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
-  const handleSelect = (questionId: string, optionIndex: number) => {
-    if (examFinished) return;
-    setAnswers((prev) => ({ ...prev, [questionId]: optionIndex }));
+  const toggleMark = (num: number) => {
+    setMarked((prev) => {
+      const next = new Set(prev);
+      if (next.has(num)) next.delete(num);
+      else next.add(num);
+      return next;
+    });
   };
 
-  const handleSubmit = useCallback(
-    async (autoSubmit = false) => {
-      if (!exam || examFinishedRef.current) return;
-      examFinishedRef.current = true;
-      if (timerRef.current) clearInterval(timerRef.current);
-
-      setSubmitting(true);
-
-      const mcqQuestions = exam.questions.filter((q) => q.type === 'MCQ');
-      const answersArr = mcqQuestions.map((q) => ({
-        questionId: q.id,
-        selected: answers[q.id] ?? -1,
-      }));
-
-      const timeSpent = (exam.timeLimit || 90) * 60 - timeLeft;
-
-      try {
-        const res = await fetch('/api/exams/submit', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            examId: exam.id,
-            answers: answersArr,
-            timeSpent,
-          }),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-
-          const details: AnswerDetail[] = mcqQuestions.map((q) => {
-            const graded = data.answers?.find((a: { questionId: string }) => a.questionId === q.id);
-            return {
-              questionId: q.id,
-              questionNumber: q.questionNumber,
-              selected: answers[q.id] ?? -1,
-              correct: graded?.correct ?? false,
-              correctAnswer: graded?.correctAnswer ?? -1,
-              question: q.question,
-              options: q.options,
-            };
-          });
-
-          setResult({
-            score: data.score,
-            correctCount: data.correctCount,
-            totalQuestions: data.totalQuestions,
-            details,
-          });
-        } else {
-          // Fallback: compute locally without correct answers
-          const details: AnswerDetail[] = mcqQuestions.map((q) => ({
-            questionId: q.id,
-            questionNumber: q.questionNumber,
-            selected: answers[q.id] ?? -1,
-            correct: false,
-            correctAnswer: -1,
-            question: q.question,
-            options: q.options,
-          }));
-          setResult({ score: 0, correctCount: 0, totalQuestions: mcqQuestions.length, details });
-        }
-      } catch {
-        const details: AnswerDetail[] = mcqQuestions.map((q) => ({
-          questionId: q.id,
-          questionNumber: q.questionNumber,
-          selected: answers[q.id] ?? -1,
-          correct: false,
-          correctAnswer: -1,
-          question: q.question,
-          options: q.options,
-        }));
-        setResult({ score: 0, correctCount: 0, totalQuestions: mcqQuestions.length, details });
-      }
-
-      setExamFinished(true);
-      setSubmitting(false);
-    },
-    [exam, answers, timeLeft, token]
-  );
-
-  if (isLoading || loading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-slate-400">加载中...</div>
+      <div className="h-screen flex items-center justify-center bg-white">
+        <div className="text-gray-500">加载中... Loading...</div>
       </div>
     );
   }
 
-  if (!user || !exam) return null;
-
-  const mcqQuestions = exam.questions.filter((q) => q.type === 'MCQ');
-  const frqQuestions = exam.questions.filter((q) => q.type === 'FRQ');
-  const currentQuestion = mcqQuestions[currentIndex];
-  const answeredCount = Object.keys(answers).length;
-
-  if (examFinished && result) {
+  if (!exam) {
     return (
-      <div className="min-h-screen bg-slate-50 py-6 px-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
-            <h1 className="text-xl font-bold text-slate-900 mb-4">🎉 模考完成！</h1>
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-700">{result.score}%</div>
-                <div className="text-xs text-blue-600">正确率</div>
-              </div>
-              <div className="text-center p-4 bg-emerald-50 rounded-lg">
-                <div className="text-2xl font-bold text-emerald-700">
-                  {result.correctCount}/{result.totalQuestions}
+      <div className="h-screen flex items-center justify-center bg-white">
+        <div className="text-gray-500">未找到试卷 Exam not found</div>
+      </div>
+    );
+  }
+
+  const q = exam.questions[currentIdx];
+  const mcqList = exam.questions.filter((q) => q.type === 'MCQ');
+  const frqList = exam.questions.filter((q) => q.type === 'FRQ');
+
+  // ========== 结果页 ==========
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-[#f0f2f5]">
+        <div className="bg-[#dce3eb] border-b border-gray-300">
+          <div className="flex items-center justify-between px-4 h-12">
+            <div className="text-sm font-bold text-gray-800">Results</div>
+            <div className="text-2xl font-mono font-bold text-gray-900">{formatTime(0)}</div>
+            <div className="w-16" />
+          </div>
+        </div>
+
+        <div className="max-w-3xl mx-auto px-6 py-8">
+          <div className="bg-white rounded-lg border border-gray-200 p-8 text-center mb-6">
+            <div className="text-5xl mb-4">🎉</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Exam Completed</h2>
+            <div className="grid grid-cols-3 gap-4 mt-6">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="text-2xl font-bold text-blue-600">
+                  {mcqList.length > 0 ? Math.round((score / mcqList.length) * 100) : 0}%
                 </div>
-                <div className="text-xs text-emerald-600">答对题数</div>
+                <div className="text-xs text-blue-500 mt-1">Accuracy</div>
               </div>
-              <div className="text-center p-4 bg-amber-50 rounded-lg">
-                <div className="text-2xl font-bold text-amber-700">
-                  {formatTime((exam.timeLimit || 90) * 60 - timeLeft)}
+              <div className="bg-green-50 rounded-lg p-4">
+                <div className="text-2xl font-bold text-green-600">{score}/{mcqList.length}</div>
+                <div className="text-xs text-green-500 mt-1">Correct</div>
+              </div>
+              <div className="bg-amber-50 rounded-lg p-4">
+                <div className="text-2xl font-bold text-amber-600">
+                  {formatTime(exam.timeLimit * 60 - timeLeft)}
                 </div>
-                <div className="text-xs text-amber-600">用时</div>
+                <div className="text-xs text-amber-500 mt-1">Time Spent</div>
               </div>
-            </div>
-            <div className="flex gap-2">
-              <Link
-                href="/exams"
-                className="flex-1 text-center px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors"
-              >
-                返回列表
-              </Link>
-              <button
-                onClick={() => window.location.reload()}
-                className="flex-1 text-center px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 transition-colors"
-              >
-                重新模考
-              </button>
             </div>
           </div>
 
-          {frqQuestions.length > 0 && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
-              <h2 className="font-semibold text-amber-800 mb-2">✏️ FRQ 自由作答题</h2>
-              <p className="text-sm text-amber-700">
-                本次考试包含 {frqQuestions.length} 道自由作答题（FRQ），请在纸上作答后对照答案解析自行批改。
+          {frqList.length > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-bold text-amber-800 mb-2">📝 Free Response Questions</h3>
+              <p className="text-amber-700 text-sm">
+                This exam included {frqList.length} free-response questions. Scoring guidelines are shown below.
               </p>
             </div>
           )}
 
-          <h2 className="text-lg font-semibold text-slate-900 mb-3">答题详情</h2>
-          <div className="space-y-3">
-            {result.details.map((d) => (
-              <div
-                key={d.questionId}
-                className={`rounded-lg border p-4 ${d.correct ? 'border-emerald-200 bg-emerald-50' : 'border-red-200 bg-red-50'}`}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <span
-                    className={`text-xs font-medium px-2 py-0.5 rounded ${
-                      d.correct ? 'bg-emerald-200 text-emerald-800' : 'bg-red-200 text-red-800'
-                    }`}
-                  >
-                    {d.correct ? '正确' : '错误'}
-                  </span>
-                  <span className="text-sm text-slate-500">第 {d.questionNumber} 题</span>
-                </div>
-                <p className="text-sm text-slate-700 mb-2">{d.question}</p>
-                <div className="text-xs text-slate-500">
-                  你的答案:{' '}
-                  {d.selected >= 0
-                    ? d.options[d.selected] || `选项 ${String.fromCharCode(65 + d.selected)}`
-                    : '未作答'}
-                  {d.correctAnswer >= 0 && (
-                    <span className="text-emerald-600 ml-2">
-                      正确答案: {d.options[d.correctAnswer] || `选项 ${String.fromCharCode(65 + d.correctAnswer)}`}
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Answer Review</h3>
+          <div className="space-y-4">
+            {exam.questions.map((q) => {
+              const userAns = answers[q.questionNumber];
+              const isCorrect = q.type === 'MCQ' && userAns === q.answer;
+              const isWrong = q.type === 'MCQ' && userAns !== undefined && userAns !== q.answer;
+
+              return (
+                <div key={q.id} className="bg-white rounded-lg border p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className={`text-xs px-2 py-1 rounded font-bold ${
+                      isCorrect ? 'bg-green-100 text-green-700' : 
+                      isWrong ? 'bg-red-100 text-red-700' : 
+                      q.type === 'FRQ' ? 'bg-amber-100 text-amber-700' : 
+                      'bg-gray-100 text-gray-600'
+                    }`}>
+                      {isCorrect ? 'Correct' : isWrong ? 'Incorrect' : q.type === 'FRQ' ? 'FRQ' : 'Unanswered'}
                     </span>
+                    <span className="font-bold text-gray-800">Question {q.questionNumber}</span>
+                    {marked.has(q.questionNumber) && (
+                      <span className="text-xs text-yellow-600">★ Marked</span>
+                    )}
+                  </div>
+                  <p className="text-gray-800 text-sm mb-2">{q.question}</p>
+                  
+                  {q.type === 'MCQ' && (
+                    <div className="text-sm">
+                      <span className="text-gray-500">
+                        Your answer: {userAns !== undefined ? String.fromCharCode(65 + userAns) : '—'}
+                      </span>
+                      <span className="mx-2 text-gray-300">|</span>
+                      <span className="text-green-600 font-medium">
+                        Correct: {String.fromCharCode(65 + (q.answer || 0))}
+                      </span>
+                      {q.explanation && (
+                        <p className="text-gray-500 mt-2 text-xs bg-gray-50 p-2 rounded">{q.explanation}</p>
+                      )}
+                    </div>
+                  )}
+                  
+                  {q.type === 'FRQ' && q.explanation && (
+                    <div className="text-sm text-amber-800 bg-amber-50 p-3 rounded mt-2">
+                      <span className="font-bold">Scoring Guidelines:</span>
+                      <p className="mt-1 text-amber-700">{q.explanation}</p>
+                    </div>
                   )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
+          </div>
+
+          <div className="mt-8 text-center pb-8">
+            <button
+              onClick={() => (window.location.href = '/exams')}
+              className="px-6 py-2 bg-[#2d3748] text-white rounded-lg hover:bg-gray-800 text-sm font-medium"
+            >
+              Back to Exam List
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
+  // ========== 考试页（Bluebook 风格） ==========
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="h-screen flex flex-col bg-white">
       {/* Top Bar */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-3">
+      <div className="bg-[#dce3eb] border-b border-gray-300 shrink-0">
+        <div className="flex items-center justify-between px-4 h-12">
+          <div className="flex items-center gap-3">
+            <div className="text-sm font-bold text-gray-800 tracking-wide">Section II</div>
+            <button
+              onClick={() => setShowDirections(!showDirections)}
+              className="text-xs text-gray-600 flex items-center gap-1 hover:underline"
+            >
+              Directions <span className="text-[10px]">{showDirections ? '▴' : '▾'}</span>
+            </button>
+          </div>
+          <div className="text-2xl font-mono font-bold text-gray-900 tabular-nums">
+            {formatTime(timeLeft)}
+          </div>
           <button
-            onClick={() => setShowExitConfirm(true)}
-            className="text-slate-500 hover:text-slate-700 text-sm"
+            onClick={() => setHidden(!hidden)}
+            className="text-xs border border-gray-400 rounded px-3 py-1 bg-white text-gray-700 hover:bg-gray-50 transition"
           >
-            ← 退出
+            {hidden ? 'Show' : 'Hide'}
           </button>
-          <h1 className="text-sm font-semibold text-slate-900 truncate max-w-[200px] md:max-w-md">
-            {exam.name}
-          </h1>
-        </div>
-        <div
-          className={`text-lg font-mono font-bold ${timeLeft < 300 ? 'text-red-600' : 'text-slate-900'}`}
-        >
-          {formatTime(timeLeft)}
         </div>
       </div>
 
-      {/* FRQ Reminder */}
-      {frqQuestions.length > 0 && (
-        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center">
-          <span className="text-sm text-amber-700">
-            ⚠️ 提示：本套题包含 {frqQuestions.length} 道自由作答题（FRQ），请在纸上作答。当前为选择题模考模式。
-          </span>
+      {/* Directions Dropdown */}
+      {showDirections && (
+        <div className="bg-blue-50 border-b border-blue-100 px-6 py-3 text-sm text-blue-900 shrink-0">
+          <p className="font-bold mb-1">Section Directions:</p>
+          <p className="text-blue-800">
+            Answer all questions. For multiple-choice questions, select the best answer. 
+            For free-response questions, write your answers on paper.
+          </p>
+        </div>
+      )}
+
+      {/* Banner */}
+      <div className="bg-[#1e2a5e] text-white text-center text-[10px] font-bold tracking-[0.25em] py-1.5 shrink-0">
+        THIS IS A TEST PREVIEW
+      </div>
+
+      {/* Hidden Overlay */}
+      {hidden && (
+        <div className="flex-1 flex items-center justify-center bg-gray-100">
+          <div className="text-center">
+            <div className="text-4xl mb-4">👁</div>
+            <p className="text-gray-600 font-medium">Content Hidden</p>
+            <p className="text-sm text-gray-400 mt-1">Click &quot;Show&quot; to resume</p>
+          </div>
         </div>
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        {/* Left Sidebar - Question Navigation */}
-        <div className="w-full md:w-56 bg-white border-r border-slate-200 flex-shrink-0 max-h-[120px] md:max-h-none overflow-y-auto">
-          <div className="p-3">
-            <div className="text-xs text-slate-500 mb-2">
-              已作答 {answeredCount}/{mcqQuestions.length}
-            </div>
-            <div className="grid grid-cols-10 md:grid-cols-5 gap-1">
-              {mcqQuestions.map((q, idx) => (
+      {!hidden && (
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-3xl mx-auto px-6 py-8">
+            {/* Question Header */}
+            <div className="flex items-center justify-between mb-4 border-b border-gray-200 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="bg-black text-white w-8 h-8 flex items-center justify-center text-sm font-bold">
+                  {q.questionNumber}
+                </div>
                 <button
-                  key={q.id}
-                  onClick={() => setCurrentIndex(idx)}
-                  className={`aspect-square rounded text-xs font-medium transition-colors ${
-                    idx === currentIndex
-                      ? 'bg-teal-600 text-white'
-                      : answers[q.id] !== undefined
-                        ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  onClick={() => toggleMark(q.questionNumber)}
+                  className={`text-xs flex items-center gap-1.5 px-3 py-1.5 rounded border transition ${
+                    marked.has(q.questionNumber)
+                      ? 'bg-yellow-100 border-yellow-400 text-yellow-800'
+                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  {q.questionNumber}
+                  <svg className="w-3.5 h-3.5" fill={marked.has(q.questionNumber) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                  </svg>
+                  Mark for Review
                 </button>
+              </div>
+              <span className={`text-xs font-bold px-2 py-1 rounded ${
+                q.type === 'FRQ' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
+              }`}>
+                {q.type}
+              </span>
+            </div>
+
+            {/* Exam day notice */}
+            <p className="text-sm text-gray-600 mb-6 italic font-serif">
+              On exam day, you&apos;ll answer this question in your free-response booklet.
+            </p>
+
+            {/* Question Body */}
+            <div className="font-serif text-gray-900">
+              {q.question.split('\n').map((line, i) => (
+                <p key={i} className="mb-3 leading-relaxed text-[15px]">
+                  {line}
+                </p>
               ))}
             </div>
-          </div>
-        </div>
 
-        {/* Right - Question Area */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6">
-          {currentQuestion && (
-            <div className="max-w-2xl mx-auto">
-              <div className="bg-white rounded-xl border border-slate-200 p-5 md:p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xs font-medium bg-slate-100 text-slate-600 px-2 py-1 rounded">
-                    第 {currentQuestion.questionNumber} 题 / 共 {mcqQuestions.length} 题
-                  </span>
+            {/* Image */}
+            {q.imageUrl && (
+              <div className="my-6">
+                <img
+                  src={q.imageUrl}
+                  alt="Figure"
+                  className="max-w-full border border-gray-300 rounded"
+                />
+              </div>
+            )}
+
+            {/* MCQ Options */}
+            {q.type === 'MCQ' && (
+              <div className="space-y-3 mt-8">
+                {q.options.map((opt, i) => {
+                  const label = String.fromCharCode(65 + i);
+                  const cleanOpt = opt.replace(/^[A-D]\.\s*/, '');
+                  const isSelected = answers[q.questionNumber] === i;
+
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => setAnswers((prev) => ({ ...prev, [q.questionNumber]: i }))}
+                      className={`w-full text-left p-4 rounded-lg border-2 transition flex items-start gap-3 ${
+                        isSelected
+                          ? 'border-blue-600 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-400 bg-white'
+                      }`}
+                    >
+                      <span className={`flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center text-sm font-bold mt-0.5 ${
+                        isSelected ? 'border-blue-600 text-blue-600' : 'border-gray-300 text-gray-500'
+                      }`}>
+                        {label}
+                      </span>
+                      <span className="text-gray-800 text-[15px] leading-relaxed pt-0.5">{cleanOpt}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* FRQ Notice */}
+            {q.type === 'FRQ' && (
+              <div className="mt-8 bg-[#fff8e1] border border-[#ffe082] rounded-lg p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xl">📝</span>
+                  <span className="font-bold text-[#5d4037] text-lg">Free Response</span>
                 </div>
-
-                <p className="text-base text-slate-900 mb-4 leading-relaxed">
-                  {currentQuestion.question}
+                <p className="text-[#5d4037] text-sm leading-relaxed">
+                  This is a free-response question. Please write your answer on paper.
+                  After submitting the exam, you can view the scoring guidelines and self-grade.
                 </p>
-
-                {currentQuestion.imageUrl && (
-                  <img
-                    src={currentQuestion.imageUrl}
-                    alt="题目配图"
-                    className="max-w-full rounded-lg border border-slate-200 mb-4"
-                  />
-                )}
-
-                <div className="space-y-2">
-                  {currentQuestion.options.map((option, idx) => {
-                    const labels = ['A', 'B', 'C', 'D', 'E'];
-                    const isSelected = answers[currentQuestion.id] === idx;
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => handleSelect(currentQuestion.id, idx)}
-                        className={`w-full text-left p-3 rounded-lg border transition-all ${
-                          isSelected
-                            ? 'border-teal-500 bg-teal-50 text-teal-900'
-                            : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                        }`}
-                      >
-                        <span
-                          className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium mr-3 ${
-                            isSelected ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-500'
-                          }`}
-                        >
-                          {labels[idx]}
-                        </span>
-                        <span className="text-sm">{option}</span>
-                      </button>
-                    );
-                  })}
+                <div className="mt-4 bg-white rounded border border-[#ffe082] p-4">
+                  <p className="text-xs text-gray-500 font-bold mb-2">WRITING TIPS:</p>
+                  <ul className="text-xs text-gray-600 list-disc list-inside space-y-1">
+                    <li>Use precise biological terminology</li>
+                    <li>Include specific examples and mechanisms</li>
+                    <li>Organize your answer with clear structure</li>
+                    <li>Answer all parts of the question</li>
+                  </ul>
                 </div>
               </div>
-
-              {/* Navigation Buttons */}
-              <div className="flex justify-between mt-4">
-                <button
-                  onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
-                  disabled={currentIndex === 0}
-                  className="px-4 py-2 rounded-lg border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  ← 上一题
-                </button>
-                {currentIndex < mcqQuestions.length - 1 ? (
-                  <button
-                    onClick={() => setCurrentIndex((prev) => prev + 1)}
-                    className="px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 transition-colors"
-                  >
-                    下一题 →
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleSubmit()}
-                    disabled={submitting}
-                    className="px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 disabled:opacity-50 transition-colors"
-                  >
-                    {submitting ? '提交中...' : '提交试卷'}
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Exit Confirm Modal */}
-      {showExitConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-sm w-full">
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">确认退出？</h3>
-            <p className="text-sm text-slate-500 mb-4">
-              退出后答题进度将不会保存。已完成 {answeredCount}/{mcqQuestions.length} 题。
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowExitConfirm(false)}
-                className="flex-1 px-4 py-2 rounded-lg border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-              >
-                继续答题
-              </button>
-              <Link
-                href="/exams"
-                className="flex-1 text-center px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors"
-              >
-                确认退出
-              </Link>
-            </div>
+            )}
           </div>
         </div>
       )}
+
+      {/* Footer */}
+      <div className="bg-[#dce3eb] border-t border-gray-300 shrink-0 px-4 py-3 flex items-center justify-between">
+        <div className="text-sm text-gray-700 font-medium">Student</div>
+
+        <div className="relative">
+          <select
+            value={currentIdx}
+            onChange={(e) => setCurrentIdx(Number(e.target.value))}
+            className="bg-[#2d3748] text-white text-sm px-4 py-2.5 rounded appearance-none pr-8 cursor-pointer font-medium min-w-[180px]"
+          >
+            {exam.questions.map((q, idx) => (
+              <option key={q.id} value={idx}>
+                Question {q.questionNumber} of {exam.questions.length}
+              </option>
+            ))}
+          </select>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white pointer-events-none text-xs">▾</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {currentIdx > 0 && (
+            <button
+              onClick={() => setCurrentIdx((c) => c - 1)}
+              className="bg-gray-500 text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-600 transition"
+            >
+              Back
+            </button>
+          )}
+          {currentIdx < exam.questions.length - 1 ? (
+            <button
+              onClick={() => setCurrentIdx((c) => c + 1)}
+              className="bg-[#2563eb] text-white px-6 py-2 rounded text-sm font-medium hover:bg-blue-700 transition"
+            >
+              Next
+            </button>
+          ) : (
+            <button
+              onClick={submitExam}
+              className="bg-green-600 text-white px-6 py-2 rounded text-sm font-medium hover:bg-green-700 transition"
+            >
+              Submit
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
