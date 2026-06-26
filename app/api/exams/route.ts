@@ -1,21 +1,26 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    const exams = await prisma.exam.findMany({
-      select: {
-        id: true,
-        year: true,
-        name: true,
-        questionCount: true,
-        timeLimit: true,
-        pdfUrl: true,
+    const exam = await prisma.exam.findUnique({
+      where: { id: params.id },
+      include: {
+        questions: {
+          orderBy: { questionNumber: 'asc' },
+        },
       },
-      orderBy: { year: 'desc' },
     });
-    return NextResponse.json(exams);
-  } catch {
-    return NextResponse.json({ error: '获取真题列表失败' }, { status: 500 });
+
+    if (!exam) {
+      return NextResponse.json({ error: 'Exam not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(exam);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
