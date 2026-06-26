@@ -62,17 +62,14 @@ export default function ExamPage() {
     let correct = 0;
     const mcqList = exam.questions.filter((q) => q.type === 'MCQ');
     mcqList.forEach((q) => {
-      if (answers[q.questionNumber] === q.answer) correct++;
+      // 防护：answer 必须存在且用户作答了，才判分
+      if (q.answer !== null && q.answer !== undefined && answers[q.questionNumber] === q.answer) {
+        correct++;
+      }
     });
     setScore(correct);
     setSubmitted(true);
   }, [exam, answers]);
-
-  const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${m}:${sec.toString().padStart(2, '0')}`;
-  };
 
   const toggleMark = (num: number) => {
     setMarked((prev) => {
