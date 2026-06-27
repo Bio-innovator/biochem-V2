@@ -1,4 +1,4 @@
-  'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useAuth, useRole } from '@/components/AuthContext';
@@ -74,29 +74,29 @@ export default function AdminPage() {
       );
     }
 
-    const clearStudentData = async (userId: string, username: string) => {
-      if (!confirm(`确定要清除学生 "${username}" 的所有学习数据吗？\n\n包括：小测记录、模考记录、错题本、学习进度。\n\n账号本身不会被删除。`)) {
-        return;
-      }
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`/api/admin/users/${userId}/clear-data`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (res.ok) {
-          alert(`✅ 已清除 ${username} 的数据`);
-        } else {
-          alert(`❌ 失败: ${data.error}`);
-        }
-      } catch (e) {
-        alert('请求失败');
-      }
-    };
-
     setFiltered(result);
   }
+
+  const clearStudentData = async (userId: string, username: string) => {
+    if (!confirm(`确定要清除学生 "${username}" 的所有学习数据吗？\n\n包括：小测记录、模考记录、错题本、学习进度。\n\n账号本身不会被删除。`)) {
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/admin/users/${userId}/clear-data`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(`✅ 已清除 ${username} 的数据`);
+      } else {
+        alert(`❌ 失败: ${data.error}`);
+      }
+    } catch (e) {
+      alert('请求失败');
+    }
+  };
 
   const stats = {
     total: users.length,
@@ -236,6 +236,9 @@ export default function AdminPage() {
                         }`}>
                           {u.status === 'APPROVED' ? '已通过' : u.status === 'PENDING' ? '待审核' : '已拒绝'}
                         </span>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-slate-400">
+                        {new Date(u.createdAt).toLocaleDateString('zh-CN')}
                       </td>
                       <td className="px-4 py-3 text-center">
                         {u.role === 'STUDENT' && (
