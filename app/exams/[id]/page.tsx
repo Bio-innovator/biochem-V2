@@ -25,6 +25,13 @@ interface Exam {
   questions: ExamQuestion[];
 }
 
+// 工具函数放在组件外面
+function formatTime(s: number) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+
 export default function ExamPage() {
   const params = useParams();
   const examId = params.id as string;
@@ -62,7 +69,6 @@ export default function ExamPage() {
     let correct = 0;
     const mcqList = exam.questions.filter((q) => q.type === 'MCQ');
     mcqList.forEach((q) => {
-      // 防护：answer 必须存在且用户作答了，才判分
       if (q.answer !== null && q.answer !== undefined && answers[q.questionNumber] === q.answer) {
         correct++;
       }
@@ -129,7 +135,7 @@ export default function ExamPage() {
               </div>
               <div className="bg-amber-50 rounded-lg p-4">
                 <div className="text-2xl font-bold text-amber-600">
-                  {formatTime(exam.timeLimit * 60 - timeLeft)}
+                  {formatTime((exam.timeLimit * 60) - timeLeft)}
                 </div>
                 <div className="text-xs text-amber-500 mt-1">Time Spent</div>
               </div>
