@@ -1,4 +1,4 @@
-'use client';
+  'use client';
 
 import { useState, useEffect } from 'react';
 import { useAuth, useRole } from '@/components/AuthContext';
@@ -73,6 +73,27 @@ export default function AdminPage() {
           (u.displayName && u.displayName.includes(searchQuery))
       );
     }
+
+    const clearStudentData = async (userId: string, username: string) => {
+      if (!confirm(`确定要清除学生 "${username}" 的所有学习数据吗？\n\n包括：小测记录、模考记录、错题本、学习进度。\n\n账号本身不会被删除。`)) {
+        return;
+      }
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/admin/users/${userId}/clear-data`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(`✅ 已清除 ${username} 的数据`);
+        } else {
+          alert(`❌ 失败: ${data.error}`);
+        }
+      } catch (e) {
+        alert('请求失败');
+      }
+    };
 
     setFiltered(result);
   }
@@ -181,6 +202,7 @@ export default function AdminPage() {
                     <th className="text-center text-xs font-medium text-slate-500 px-4 py-3">角色</th>
                     <th className="text-center text-xs font-medium text-slate-500 px-4 py-3">状态</th>
                     <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">注册时间</th>
+                    <th className="text-center text-xs font-medium text-slate-500 px-4 py-3">操作</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -215,8 +237,16 @@ export default function AdminPage() {
                           {u.status === 'APPROVED' ? '已通过' : u.status === 'PENDING' ? '待审核' : '已拒绝'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-slate-400">
-                        {new Date(u.createdAt).toLocaleDateString('zh-CN')}
+                      <td className="px-4 py-3 text-center">
+                        {u.role === 'STUDENT' && (
+                          <button
+                            onClick={() => clearStudentData(u.id, u.username)}
+                            className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition"
+                            title="清除学习数据（不删账号）"
+                          >
+                            清除数据
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
