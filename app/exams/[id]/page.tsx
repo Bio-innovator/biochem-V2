@@ -313,17 +313,21 @@ export default function ExamPage() {
                 </p>
               ))}
             </div>
-
+            
             {/* Image */}
             {q.imageUrl && (
-              <div className="my-6">
-                <img
-                  src={q.imageUrl}
-                  alt="Figure"
-                  className="max-w-full border border-gray-300 rounded"
-                />
+              <div className="my-6 space-y-4">
+                {q.imageUrl.split(',').map((url, i) => (
+                  <img
+                    key={i}
+                    src={url.trim()}
+                    alt={`Figure ${i + 1}`}
+                    className="max-w-full border border-gray-300 rounded"
+                  />
+                ))}
               </div>
             )}
+            
 
             {/* MCQ Options */}
             {q.type === 'MCQ' && (
