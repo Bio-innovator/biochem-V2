@@ -1,26 +1,19 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET() {
   try {
-    const exam = await prisma.exam.findUnique({
-      where: { id: params.id },
+    const exams = await prisma.exam.findMany({
       include: {
         questions: {
           orderBy: { questionNumber: 'asc' },
         },
       },
+      orderBy: { year: 'desc' },
     });
-
-    if (!exam) {
-      return NextResponse.json({ error: 'Exam not found' }, { status: 404 });
-    }
-
-    return NextResponse.json(exam);
+    return NextResponse.json(exams);
   } catch (err: any) {
+    console.error('Exams API error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
