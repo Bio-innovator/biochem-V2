@@ -9,19 +9,9 @@ interface FullPageScrollProps {
 
 export default function FullPageScroll({ pages, bgColors }: FullPageScrollProps) {
   const [currentPage, setCurrentPage] = useState(0);
-  // 竖屏 / 窄屏时退化为普通纵向滚动，不再整页翻屏
-  const [isPortrait, setIsPortrait] = useState(false);
   const isScrolling = useRef(false);
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
   const totalPages = pages.length;
-
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 768px), (orientation: portrait)');
-    const update = () => setIsPortrait(mq.matches);
-    update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
-  }, []);
 
   const lockBriefly = useCallback(() => {
     isScrolling.current = true;
@@ -115,25 +105,7 @@ export default function FullPageScroll({ pages, bgColors }: FullPageScrollProps)
     }
   };
 
-  // 竖屏 / 窄屏：普通堆叠布局，系统滚动
-  if (isPortrait) {
-    return (
-      <div>
-        {pages.map((page, index) => (
-          <section
-            key={index}
-            className={`relative min-h-[calc(100dvh-4rem)] flex flex-col items-center justify-center px-5 py-16 ${
-              bgColors?.[index] || 'bg-white'
-            }`}
-          >
-            {page}
-          </section>
-        ))}
-      </div>
-    );
-  }
-
-  // 横屏：整页翻屏；每页内部可独立滚动，内容再高也不会侵入相邻页
+  // 所有设备统一整页翻屏；每页内部可独立滚动，内容再高也不会侵入相邻页
   return (
     <div
       className="fixed inset-0 top-16 overflow-hidden"
@@ -156,15 +128,16 @@ export default function FullPageScroll({ pages, bgColors }: FullPageScrollProps)
               bgColors?.[index] || 'bg-white'
             }`}
           >
-            <div className="min-h-full flex flex-col px-6 py-10">
+            {/* 右侧为翻页圆点留出余白，避免文字被遮挡 */}
+            <div className="min-h-full flex flex-col pl-5 pr-12 py-6 sm:pl-8 sm:pr-16 sm:py-8">
               <div className="m-auto w-full flex flex-col items-center">{page}</div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Right Side Dot Indicators */}
-      <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-3">
+      {/* Right Side Dot Indicators —— 半透明常驻，悬停时才完全显现 */}
+      <div className="fixed right-2.5 sm:right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-2.5 sm:gap-3 opacity-40 hover:opacity-100 transition-opacity duration-300">
         {pages.map((_, index) => (
           <button
             key={index}

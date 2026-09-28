@@ -1,13 +1,24 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import genesData from '@/data/genes.json';
 
 /**
  * DnaHelix — 代码生成的双螺旋背景动画
  * 白色画布上，一条缓慢旋转的 DNA 双螺旋横贯屏幕，
  * 碱基对按 A-T / C-G 上色，另有几枚缓缓漂移的"细胞"光斑。
+ * 桌面端把鼠标悬停到某个碱基竖道上，会随机弹出一枚「基因小卡」
+ * （内容来自 data/genes.json 基因库）；屏幕宽度 ≤560px 时整个组件自动隐藏。
  * 支持暂停 / 播放，并尊重系统的 prefers-reduced-motion 设置。
  */
+
+interface Gene {
+  symbol: string;
+  name: string;
+  zh: string;
+  en: string;
+}
+const GENES = genesData as Gene[];
 
 // 碱基配色（白底下的柔和版本）
 const BASE_PAIR_COLORS = [
@@ -17,22 +28,42 @@ const BASE_PAIR_COLORS = [
 const STRAND_FRONT = '#286e44'; // 深绿主链
 const STRAND_BACK = '#0d9488'; // 青绿主链
 
+const RUNG_GAP = 24; // 碱基对间距
+const HIT_RADIUS = 14; // 鼠标命中竖道的横向容差
+
 interface Cell {
   r: number;
-  cx: number; // 相对中心偏移系数
+  cx: number;
   cy: number;
-  sx: number; // 漂移速度
+  sx: number;
   sy: number;
-  px: number; // 相位
+  px: number;
   py: number;
   hue: string;
 }
 
-export default function DnaHelix() {
+interface Rung {
+  key: number;
+  x: number;
+  ya: number;
+  yb: number;
+}
+
+interface Tip {
+  x: number;
+  y: number;
+  gene: Gene;
+}
+
+function HelixCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pausedRef = useRef(false);
   const [paused, setPaused] = useState(false);
   const rafRef = useRef<number>(0);
+  const rungsRef = useRef<Rung[]>([]); // 上一帧所有可见竖道的位置
+  const hoverKeyRef = useRef<number>(-1); // 当前悬停的竖道
+  const sizeRef = useRef({ w: 0, h: 0 });
+  const [tip, setTip] = useState<Tip | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -55,6 +86,7 @@ export default function DnaHelix() {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       width = rect.width;
       height = rect.height;
+      sizeRef.current = { w: width, h: height };
       canvas.width = Math.max(1, Math.round(width * dpr));
       canvas.height = Math.max(1, Math.round(height * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -100,7 +132,6 @@ export default function DnaHelix() {
       const amp = Math.min(height * 0.24, 150);
       const waveLen = Math.max(300, width * 0.32); // 一个螺距的像素宽度
       const k = (Math.PI * 2) / waveLen;
-      const rungGap = 24; // 碱基对间距
       const margin = 40;
 
       const y1 = (x: number) => cy + Math.sin(x * k + t) * amp;
@@ -108,18 +139,23 @@ export default function DnaHelix() {
       const depth1 = (x: number) => Math.cos(x * k + t); // 1=最前 -1=最后
 
       // 先画碱基对横档（只在近似"侧面"时可见，模拟真实螺旋）
-      for (let x = -margin; x <= width + margin; x += rungGap) {
+      const rungs: Rung[] = [];
+      for (let x = -margin; x <= width + margin; x += RUNG_GAP) {
         const d = depth1(x);
         const visibility = Math.abs(d); // 正对侧面时横档最长最清晰
         if (visibility < 0.12) continue;
-        const pair = BASE_PAIR_COLORS[Math.round(x / rungGap) % 2 === 0 ? 0 : 1];
+        const key = Math.round(x / RUNG_GAP);
+        const pair = BASE_PAIR_COLORS[key % 2 === 0 ? 0 : 1];
         const ya = y1(x);
         const yb = y2(x);
         const midY = (ya + yb) / 2;
-        const alpha = 0.16 + visibility * 0.5;
+        const hovered = key === hoverKeyRef.current;
+        const alpha = hovered ? 1 : 0.16 + visibility * 0.5;
+
+        rungs.push({ key, x, ya, yb });
 
         ctx.lineCap = 'round';
-        ctx.lineWidth = 2.4;
+        ctx.lineWidth = hovered ? 4 : 2.4;
         // 半档上色：各自归属一条链上的碱基
         ctx.strokeStyle = pair[0];
         ctx.globalAlpha = alpha;
@@ -135,14 +171,15 @@ export default function DnaHelix() {
         // 碱基节点
         ctx.fillStyle = pair[0];
         ctx.beginPath();
-        ctx.arc(x, ya, 2.2 + visibility * 1.6, 0, Math.PI * 2);
+        ctx.arc(x, ya, (hovered ? 1.6 : 1) * (2.2 + visibility * 1.6), 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = pair[1];
         ctx.beginPath();
-        ctx.arc(x, yb, 2.2 + visibility * 1.6, 0, Math.PI * 2);
+        ctx.arc(x, yb, (hovered ? 1.6 : 1) * (2.2 + visibility * 1.6), 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 1;
       }
+      rungsRef.current = rungs;
 
       // 主链：后链（透明度低）先画，前链后画，形成穿插的空间感
       const drawStrand = (yFn: (x: number) => number, depthSign: 1 | -1, color: string) => {
@@ -197,9 +234,75 @@ export default function DnaHelix() {
     }
   };
 
+  // 悬停命中检测：找到离鼠标最近、且纵坐标落在竖道范围内的碱基对
+  const handleMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    let best: Rung | null = null;
+    let bestDist = HIT_RADIUS;
+    for (const r of rungsRef.current) {
+      const dx = Math.abs(mx - r.x);
+      const yTop = Math.min(r.ya, r.yb) - 10;
+      const yBot = Math.max(r.ya, r.yb) + 10;
+      if (dx < bestDist && my >= yTop && my <= yBot) {
+        best = r;
+        bestDist = dx;
+      }
+    }
+
+    if (!best) {
+      if (hoverKeyRef.current !== -1) {
+        hoverKeyRef.current = -1;
+        setTip(null);
+      }
+      return;
+    }
+    if (best.key !== hoverKeyRef.current) {
+      hoverKeyRef.current = best.key;
+      setTip({ x: mx, y: my, gene: GENES[Math.floor(Math.random() * GENES.length)] });
+    } else {
+      setTip((prev) => (prev ? { ...prev, x: mx, y: my } : prev));
+    }
+  };
+
+  const handleLeave = () => {
+    hoverKeyRef.current = -1;
+    setTip(null);
+  };
+
+  // 基因小卡定位：默认在光标右上方，靠近边缘时收回来
+  const CARD_W = 264;
+  const CARD_H = 150;
+  const { w: cw, h: ch } = sizeRef.current;
+  const tipLeft = tip ? Math.max(8, Math.min(tip.x + 18, cw - CARD_W - 8)) : 0;
+  const tipTop = tip ? Math.max(8, Math.min(tip.y - 20, ch - CARD_H - 8)) : 0;
+
   return (
     <>
-      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" aria-hidden="true" />
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 h-full w-full"
+        aria-hidden="true"
+        onMouseMove={handleMove}
+        onMouseLeave={handleLeave}
+      />
+      {tip && (
+        <div
+          className="pointer-events-none absolute z-30 w-[264px] rounded-lg border border-teal-100 bg-white/95 px-4 py-3 shadow-lg backdrop-blur"
+          style={{ left: tipLeft, top: tipTop }}
+        >
+          <div className="flex items-baseline gap-2">
+            <span className="font-mono text-base font-bold text-teal-700">{tip.gene.symbol}</span>
+            <span className="truncate text-[10px] text-slate-400">{tip.gene.name}</span>
+          </div>
+          <p className="mt-1.5 text-xs leading-relaxed text-slate-700">{tip.gene.zh}</p>
+          <p className="mt-1 text-[10px] leading-relaxed text-slate-400">{tip.gene.en}</p>
+        </div>
+      )}
       <button
         onClick={togglePause}
         className="absolute left-4 bottom-4 sm:left-6 sm:bottom-6 z-20 rounded-full border border-dashed border-slate-400 bg-white/70 backdrop-blur px-3 py-1 text-[11px] text-slate-500 hover:border-teal-600 hover:text-teal-700 transition-colors"
@@ -208,4 +311,20 @@ export default function DnaHelix() {
       </button>
     </>
   );
+}
+
+/** 屏幕宽度 ≤560px（覆盖最宽的手机）时不渲染，避免动画被压缩得难以辨认 */
+export default function DnaHelix() {
+  const [enabled, setEnabled] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 561px)');
+    const update = () => setEnabled(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+
+  if (!enabled) return null;
+  return <HelixCanvas />;
 }
