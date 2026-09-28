@@ -90,8 +90,8 @@ const IconSprout = () => (
 
 const features = [
   { icon: IconBook, title: '知识点学习', titleEn: 'Knowledge', desc: '8 个单元共 53 个核心知识点，中英双语讲解', descEn: '53 core topics across 8 units, bilingual' },
-  { icon: IconChecklist, title: '小测平台', titleEn: 'Quiz', desc: '40 道精选题目，支持按单元筛选和限时模式', descEn: '40 selected questions with filtering & timer' },
-  { icon: IconGlossary, title: '生物词典', titleEn: 'Glossary', desc: '202+ 专业词汇，音标、释义、例句齐全', descEn: '202+ professional terms with phonetics & examples' },
+  { icon: IconChecklist, title: '小测平台', titleEn: 'Quiz', desc: '1000+ 道精选题目，支持按单元筛选和限时模式', descEn: '1000+ selected questions with filtering & timer' },
+  { icon: IconGlossary, title: '生物词典', titleEn: 'Glossary', desc: '1000+ 专业词汇，音标、释义、例句齐全', descEn: '1000+ professional terms with phonetics & examples' },
   { icon: IconCompass, title: '专业探索', titleEn: 'Majors', desc: '本科及研究生生物相关专业介绍与课程规划', descEn: 'Undergraduate & graduate bio major guides' },
   { icon: IconChart, title: '班级统计', titleEn: 'Classroom', desc: '班级概览、学生名单、薄弱知识点统计', descEn: 'Class overview, student list & weak spots' },
   { icon: IconStopwatch, title: '题目测试', titleEn: 'AP Exam', desc: '生物题目、在线模考、成绩分析', descEn: 'Practice exams & performance analysis' },
@@ -100,8 +100,8 @@ const features = [
 const heroStats = [
   { value: '8', zh: '单元', en: 'Units' },
   { value: '53', zh: '知识点', en: 'Topics' },
-  { value: '40', zh: '精选题目', en: 'Questions' },
-  { value: '202+', zh: '专业词汇', en: 'Terms' },
+  { value: '1000+', zh: '精选题目', en: 'Questions' },
+  { value: '1000+', zh: '专业词汇', en: 'Terms' },
 ];
 
 function HomeContent() {
