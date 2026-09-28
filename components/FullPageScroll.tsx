@@ -122,7 +122,7 @@ export default function FullPageScroll({ pages, bgColors }: FullPageScrollProps)
         {pages.map((page, index) => (
           <section
             key={index}
-            className={`relative min-h-[calc(100dvh-3.5rem)] flex flex-col items-center justify-center px-5 py-16 ${
+            className={`relative min-h-[calc(100dvh-4rem)] flex flex-col items-center justify-center px-5 py-16 ${
               bgColors?.[index] || 'bg-white'
             }`}
           >
@@ -136,7 +136,7 @@ export default function FullPageScroll({ pages, bgColors }: FullPageScrollProps)
   // 横屏：整页翻屏；每页内部可独立滚动，内容再高也不会侵入相邻页
   return (
     <div
-      className="fixed inset-0 top-14 overflow-hidden"
+      className="fixed inset-0 top-16 overflow-hidden"
       onWheel={handleWheel}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}

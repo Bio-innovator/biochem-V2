@@ -134,7 +134,7 @@ function HomeContent() {
   // If logged in, redirect to dashboard
   if (user) {
     return (
-      <div className="min-h-[calc(100vh-3.5rem)] flex items-center justify-center">
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="text-center">
           <p className="text-lg text-slate-600 mb-4">
             欢迎回来，{user.displayName || user.username}！
@@ -153,7 +153,7 @@ function HomeContent() {
     // Page 1: Hero —— 生成式 DNA 双螺旋 + 白色文字岛
     <div key="hero" className="absolute inset-0 overflow-hidden">
       <DnaHelix />
-      <div className="relative z-10 h-full flex flex-col items-center justify-center px-5 sm:px-6">
+      <div className="relative z-10 h-full flex flex-col items-center justify-center px-5 sm:px-6 pt-6 pb-16">
         <div className="w-full max-w-2xl bg-white/85 backdrop-blur-sm border border-slate-200 rounded-2xl px-6 sm:px-12 py-9 sm:py-11 text-center">
           <p className="text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-4">
             AP BIOLOGY · 8 UNITS · 53 TOPICS
@@ -172,13 +172,22 @@ function HomeContent() {
           <p className="text-xs text-slate-400 mb-8 leading-relaxed">
             A learning management system designed for AP Biology exam preparation, covering 8 units of knowledge, self-test quizzes, biological vocabulary, and major exploration.
           </p>
-          <button
-            onClick={() => { setShowLogin(true); setError(''); }}
-            className="px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-lg shadow-lg hover:shadow-xl"
-          >
-            登录
-            <span className="block text-sm font-normal opacity-80 mt-0.5">Login</span>
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+            <button
+              onClick={() => { setShowLogin(true); setError(''); }}
+              className="w-full sm:w-auto px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-lg shadow-lg hover:shadow-xl"
+            >
+              登录
+              <span className="block text-sm font-normal opacity-80 mt-0.5">Login</span>
+            </button>
+            <Link
+              href="/about"
+              className="w-full sm:w-auto px-8 py-3 bg-white/70 border border-slate-300 text-slate-700 rounded-lg hover:border-teal-600 hover:text-teal-700 transition font-medium text-lg"
+            >
+              个人介绍
+              <span className="block text-sm font-normal opacity-60 mt-0.5">Personal-intro</span>
+            </Link>
+          </div>
           <div className="mt-8 pt-6 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-3">
             {heroStats.map((s) => (
               <div key={s.en}>
@@ -190,7 +199,7 @@ function HomeContent() {
           </div>
         </div>
         {/* 滚动提示 */}
-        <div className="absolute bottom-4 sm:bottom-5 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-slate-400 pointer-events-none">
+        <div className="absolute bottom-4 sm:bottom-5 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-1 text-slate-400 pointer-events-none">
           <span className="text-[10px] tracking-[0.3em]">下滑探索 · SCROLL</span>
           <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
             <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
@@ -339,7 +348,7 @@ function HomeContent() {
 
 export default function Home() {
   return (
-    <Suspense fallback={<div className="min-h-[calc(100vh-3.5rem)] flex items-center justify-center">加载中... Loading...</div>}>
+    <Suspense fallback={<div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">加载中... Loading...</div>}>
       <HomeContent />
     </Suspense>
   );
