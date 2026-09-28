@@ -264,12 +264,6 @@ function HomeContent() {
       <p className="text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-2">START YOUR JOURNEY</p>
       <h2 className="text-3xl font-bold text-slate-900 mb-2">开始你的 AP 生物学习之旅</h2>
       <p className="text-sm text-slate-400 mb-6">Start Your AP Biology Journey</p>
-      <p className="text-slate-500 mb-2 text-lg leading-relaxed">
-        无论你是准备考试的学生，还是辅助教学的老师，Biochem-niche 都能为你提供全面的学习支持。
-      </p>
-      <p className="text-sm text-slate-400 mb-8 leading-relaxed">
-        Whether you are a student preparing for exams or a teacher supporting instruction, Biochem-niche provides comprehensive learning support.
-      </p>
       <button
         onClick={() => { setShowLogin(true); setError(''); }}
         className="px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-lg shadow-lg"
