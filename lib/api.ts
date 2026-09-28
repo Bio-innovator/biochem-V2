@@ -42,6 +42,16 @@ export async function apiFetch(path: string, options: FetchOptions = {}) {
 
   const data = await response.json().catch(() => null);
 
+  // 令牌失效（过期/被吊销）时，清除本机保存的登录状态并回到登录入口，
+  // 避免页面在令牌已失效的情况下长期显示"已登录"。
+  if (response.status === 401 && !path.includes('/api/auth/login')) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/?login=1';
+    }
+  }
+
   if (!response.ok) {
     const error = data?.error || `HTTP ${response.status}`;
     throw new Error(error);

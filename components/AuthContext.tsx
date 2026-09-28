@@ -26,6 +26,36 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
 });
 
+// 解析 JWT 载荷（不验签，仅用于读取过期时间；真正的校验在服务端）
+function decodeJwtPayload(token: string): { exp?: number } | null {
+  try {
+    const part = token.split('.')[1];
+    if (!part) return null;
+    const base64 = part.replace(/-/g, '+').replace(/_/g, '/');
+    const json = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
+        .join('')
+    );
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
+function isTokenExpired(token: string): boolean {
+  const payload = decodeJwtPayload(token);
+  if (!payload) return true; // 无法解析的令牌视为无效
+  if (!payload.exp) return false; // 无过期字段则不主动清除
+  return payload.exp * 1000 <= Date.now();
+}
+
+function clearStoredAuth() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -36,13 +66,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
     if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch {
-        // Invalid stored data, clear it
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+      // 令牌已过期（或损坏）时直接清除，避免页面长期停留在"已登录"状态
+      if (isTokenExpired(storedToken)) {
+        clearStoredAuth();
+      } else {
+        try {
+          setToken(storedToken);
+          setUser(JSON.parse(storedUser));
+        } catch {
+          // Invalid stored data, clear it
+          clearStoredAuth();
+        }
       }
     }
     setIsLoading(false);
@@ -56,8 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearStoredAuth();
     setToken(null);
     setUser(null);
     window.location.href = '/';
