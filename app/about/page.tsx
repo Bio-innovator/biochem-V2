@@ -16,7 +16,7 @@ const iconProps = {
 
 // 折角文档
 const IconDoc = () => (
-  <svg {...iconProps} className="w-6 h-6 text-teal-700 shrink-0">
+  <svg {...iconProps} className="w-5 h-5 text-teal-700 shrink-0">
     <path d="M6 3.5h7.5L19 9v11a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20V5a1.5 1.5 0 0 1 1-1.5z" />
     <path d="M13.5 3.5V9H19" />
     <path d="M8.5 13h7M8.5 16h5" />
@@ -25,7 +25,7 @@ const IconDoc = () => (
 
 // 外链跳转
 const IconExternal = () => (
-  <svg {...iconProps} className="w-6 h-6 text-teal-700 shrink-0">
+  <svg {...iconProps} className="w-5 h-5 text-teal-700 shrink-0">
     <rect x="4" y="4" width="16" height="16" rx="2.5" />
     <path d="M10 14l5-5M11 9h4v4" />
   </svg>
@@ -297,44 +297,44 @@ const activities: Activity[] = [
 
 function ActivityPage({ a, total }: { a: Activity; total: number }) {
   return (
-    <div className="w-full max-w-6xl mx-auto text-left grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+    <div className="w-full max-w-6xl mx-auto text-left grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
       {/* 档案栏：大编号 + 元信息 */}
-      <div className="lg:col-span-4 flex items-end justify-between gap-6 lg:block">
+      <div className="lg:col-span-4 flex flex-wrap items-end justify-between gap-x-5 gap-y-2 lg:block">
         <div>
-          <div className="font-mono text-5xl sm:text-6xl lg:text-7xl leading-none text-slate-900">
+          <div className="font-mono text-4xl sm:text-5xl lg:text-6xl leading-none text-slate-900">
             {a.index}
-            <span className="text-slate-300 text-2xl sm:text-3xl lg:text-4xl">⁄{total}</span>
+            <span className="text-slate-300 text-xl sm:text-2xl lg:text-3xl">⁄{total}</span>
           </div>
-          <p className="mt-3 text-[10px] sm:text-[11px] tracking-[0.28em] text-teal-700 font-medium uppercase">
+          <p className="mt-2 sm:mt-3 text-[9px] sm:text-[11px] tracking-[0.28em] text-teal-700 font-medium uppercase">
             {a.tagEn}
           </p>
         </div>
-        <dl className="text-right lg:text-left lg:mt-10 space-y-4 shrink-0">
+        <dl className="min-w-0 max-w-full text-right lg:text-left lg:mt-8 space-y-3">
           <div>
-            <dt className="text-[10px] uppercase tracking-widest text-slate-400 mb-1">时间 · Time</dt>
-            <dd className="text-sm font-medium text-slate-800">{a.timeZh}</dd>
-            <dd className="text-xs text-slate-400 mt-0.5">{a.timeEn}</dd>
+            <dt className="text-[10px] uppercase tracking-widest text-slate-400 mb-0.5">时间 · Time</dt>
+            <dd className="text-[13px] sm:text-sm font-medium text-slate-800 break-words">{a.timeZh}</dd>
+            <dd className="text-[11px] sm:text-xs text-slate-400 mt-0.5">{a.timeEn}</dd>
           </div>
           <div>
-            <dt className="text-[10px] uppercase tracking-widest text-slate-400 mb-1">角色 · Role</dt>
-            <dd className="text-sm font-medium text-slate-800">{a.roleZh}</dd>
-            <dd className="text-xs text-slate-400 mt-0.5">{a.roleEn}</dd>
+            <dt className="text-[10px] uppercase tracking-widest text-slate-400 mb-0.5">角色 · Role</dt>
+            <dd className="text-[13px] sm:text-sm font-medium text-slate-800 break-words">{a.roleZh}</dd>
+            <dd className="text-[11px] sm:text-xs text-slate-400 mt-0.5">{a.roleEn}</dd>
           </div>
         </dl>
       </div>
 
       {/* 内容栏 */}
       <div className="lg:col-span-8 min-w-0">
-        <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">{a.nameZh}</h2>
-        <p className="mt-1.5 text-base sm:text-lg text-slate-400">{a.nameEn}</p>
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight">{a.nameZh}</h2>
+        <p className="mt-1 sm:mt-1.5 text-sm sm:text-base lg:text-lg text-slate-400">{a.nameEn}</p>
 
-        <div className="mt-5 pt-5 border-t border-slate-200">
-          <p className="text-[15px] text-slate-600 leading-loose">{a.introZh}</p>
-          <p className="mt-3 text-[13px] text-slate-400 leading-relaxed">{a.introEn}</p>
+        <div className="mt-4 pt-4 border-t border-slate-200">
+          <p className="text-[13px] sm:text-[15px] text-slate-600 leading-relaxed sm:leading-loose">{a.introZh}</p>
+          <p className="mt-2.5 text-xs sm:text-[13px] text-slate-400 leading-relaxed">{a.introEn}</p>
         </div>
 
         {a.images && a.images.length > 0 && (
-          <div className={`mt-7 grid gap-5 ${a.images.length > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
+          <div className={`mt-5 grid gap-4 ${a.images.length > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
             {a.images.map((img, i) => (
               <figure key={img.src} className="min-w-0">
                 {/* 默认去色，悬停显色：档案翻阅感 */}
@@ -344,10 +344,10 @@ function ActivityPage({ a, total }: { a: Activity; total: number }) {
                   alt={`${a.nameZh} — ${img.captionZh}`}
                   loading="lazy"
                   className={`block w-auto max-w-full mx-auto border border-slate-200 bg-white grayscale-[45%] hover:grayscale-0 transition duration-500 ${
-                    a.images!.length > 1 ? 'max-h-[240px] sm:max-h-[260px]' : 'max-h-[300px] sm:max-h-[340px]'
+                    a.images!.length > 1 ? 'max-h-[150px] sm:max-h-[200px] lg:max-h-[220px]' : 'max-h-[180px] sm:max-h-[230px] lg:max-h-[270px]'
                   }`}
                 />
-                <figcaption className="mt-2 font-mono text-[10px] tracking-wide text-slate-400 text-center">
+                <figcaption className="mt-1.5 font-mono text-[9px] sm:text-[10px] tracking-wide text-slate-400 text-center">
                   FIG. {a.index}.{i + 1} — {img.captionZh} · {img.captionEn}
                 </figcaption>
               </figure>
@@ -356,19 +356,19 @@ function ActivityPage({ a, total }: { a: Activity; total: number }) {
         )}
 
         {a.links && a.links.length > 0 && (
-          <div className="mt-7">
+          <div className="mt-5">
             {a.links.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center gap-4 border-t border-slate-200 last:border-b py-3.5 -mx-2 px-2 hover:bg-slate-50 transition-colors"
+                className="group flex items-center gap-3 sm:gap-4 border-t border-slate-200 last:border-b py-2.5 -mx-2 px-2 hover:bg-slate-50 transition-colors"
               >
                 {link.kind === 'pdf' ? <IconDoc /> : <IconExternal />}
                 <span className="flex-1 min-w-0">
                   <span className="block text-sm font-medium text-slate-800 truncate">{link.labelZh}</span>
-                  <span className="block text-xs text-slate-400 mt-0.5 truncate">
+                  <span className="block text-[11px] sm:text-xs text-slate-400 mt-0.5 truncate">
                     {link.labelEn} — {link.hint}
                   </span>
                 </span>
@@ -390,18 +390,18 @@ export default function AboutPage() {
   // 说明页
   const cover = (
     <div key="cover" className="w-full max-w-5xl mx-auto text-left">
-      <p className="text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-6">
+      <p className="text-[10px] sm:text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-4 sm:mb-6">
         PERSONAL INTRO · 2024 — 2026
       </p>
-      <h1 className="text-5xl sm:text-7xl font-bold text-slate-900 tracking-tight">王致远</h1>
-      <p className="mt-3 text-sm sm:text-base tracking-[0.3em] text-slate-400 uppercase">
+      <h1 className="text-4xl sm:text-6xl font-bold text-slate-900 tracking-tight">王致远</h1>
+      <p className="mt-2 sm:mt-3 text-xs sm:text-base tracking-[0.3em] text-slate-400 uppercase">
         Ivan Wang · Zhiyuan Wang
       </p>
-      <p className="mt-7 text-slate-600 leading-loose max-w-2xl text-[15px]">
+      <p className="mt-5 sm:mt-7 text-slate-600 leading-relaxed sm:leading-loose max-w-2xl text-[13px] sm:text-[15px]">
         北京师范大学附属中学国际部学生，AP 生物与生物信息学方向。以下是 2024–2026
         年间对我最重要的十段经历——从球场、班级到实验室，再到秦岭的山野。
       </p>
-      <p className="mt-2 text-[13px] text-slate-400 leading-relaxed max-w-2xl">
+      <p className="mt-2 text-xs sm:text-[13px] text-slate-400 leading-relaxed max-w-2xl">
         A student at the High School Affiliated to Beijing Normal University (International
         Department), focused on AP Biology and bioinformatics. Below are the ten experiences that
         shaped me most between 2024 and 2026 — from the court and the classroom to the lab and the
@@ -409,18 +409,18 @@ export default function AboutPage() {
       </p>
 
       {/* 档案目录 */}
-      <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-x-12">
+      <div className="mt-6 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 gap-x-12">
         {activities.map((a) => (
           <div
             key={a.index}
-            className="group flex items-baseline gap-4 py-3 border-b border-slate-200 transition-colors hover:border-teal-400"
+            className="group flex items-baseline gap-3 sm:gap-4 py-1.5 sm:py-3 border-b border-slate-200 transition-colors hover:border-teal-400"
           >
-            <span className="font-mono text-sm text-slate-300 group-hover:text-teal-600 transition-colors w-7 shrink-0">
+            <span className="font-mono text-xs sm:text-sm text-slate-300 group-hover:text-teal-600 transition-colors w-6 sm:w-7 shrink-0">
               {a.index}
             </span>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-slate-800 truncate">{a.nameZh}</div>
-              <div className="text-xs text-slate-400 truncate">{a.nameEn}</div>
+              <div className="text-[13px] sm:text-sm font-semibold text-slate-800 truncate">{a.nameZh}</div>
+              <div className="hidden sm:block text-xs text-slate-400 truncate">{a.nameEn}</div>
             </div>
             <span className="text-[10px] uppercase tracking-widest text-slate-300 group-hover:text-slate-400 transition-colors shrink-0">
               {a.yearShort}
@@ -429,7 +429,7 @@ export default function AboutPage() {
         ))}
       </div>
 
-      <p className="mt-10 text-[10px] tracking-[0.3em] text-slate-400">
+      <p className="mt-6 sm:mt-10 text-[9px] sm:text-[10px] tracking-[0.3em] text-slate-400">
         向下滚动，每页一段经历 · SCROLL — ONE PAGE PER EXPERIENCE
       </p>
     </div>
