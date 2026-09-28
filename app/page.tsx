@@ -22,7 +22,7 @@ const units = [
 
 // 手绘线条图标（stroke 风格，随文字色变化）
 const iconProps = {
-  className: 'w-7 h-7 text-teal-700',
+  className: 'w-5 h-5 sm:w-7 sm:h-7 text-teal-700',
   fill: 'none',
   stroke: 'currentColor',
   strokeWidth: 1.5,
@@ -81,7 +81,7 @@ const IconStopwatch = () => (
 );
 
 const IconSprout = () => (
-  <svg {...iconProps} className="w-9 h-9 text-teal-700">
+  <svg {...iconProps} className="w-7 h-7 sm:w-9 sm:h-9 text-teal-700">
     <path d="M12 21v-8" />
     <path d="M12 13c0-3.5 2.8-6 7-6 0 3.8-2.8 6-7 6z" />
     <path d="M12 13c0-3.5-2.8-6-7-6 0 3.8 2.8 6 7 6z" />
@@ -153,45 +153,45 @@ function HomeContent() {
     // Page 1: Hero —— 生成式 DNA 双螺旋 + 白色文字岛
     <div key="hero" className="absolute inset-0 overflow-hidden">
       <DnaHelix />
-      <div className="relative z-10 h-full flex flex-col items-center justify-center px-5 sm:px-6 pt-6 pb-16">
-        <div className="w-full max-w-2xl bg-white/85 backdrop-blur-sm border border-slate-200 rounded-2xl px-6 sm:px-12 py-9 sm:py-11 text-center">
-          <p className="text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-4">
+      <div className="pointer-events-none relative z-10 h-full flex flex-col items-center justify-center px-4 sm:px-6 pt-4 pb-14">
+        <div className="pointer-events-auto w-full max-w-2xl bg-white/85 backdrop-blur-sm border border-slate-200 rounded-2xl px-5 sm:px-12 py-6 sm:py-10 text-center">
+          <p className="text-[10px] sm:text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-2 sm:mb-4">
             AP BIOLOGY · 8 UNITS · 53 TOPICS
           </p>
-          <h1 className="font-serif text-5xl sm:text-6xl font-bold text-slate-900 tracking-tight mb-3">
+          <h1 className="font-serif text-4xl sm:text-6xl font-bold text-slate-900 tracking-tight mb-2 sm:mb-3">
             Biochem-niche
           </h1>
-          <p className="text-xl sm:text-2xl text-teal-600 font-medium">
+          <p className="text-lg sm:text-2xl text-teal-600 font-medium">
             AP Biology 智能学习平台
           </p>
-          <p className="text-xs text-slate-400 mt-1 mb-6">AP Biology Intelligent Learning Platform</p>
-          <p className="text-slate-500 mb-2 text-sm sm:text-base leading-relaxed">
+          <p className="text-[11px] sm:text-xs text-slate-400 mt-1 mb-4 sm:mb-6">AP Biology Intelligent Learning Platform</p>
+          <p className="text-slate-500 mb-2 text-[13px] sm:text-base leading-relaxed">
             专为 AP 生物学考试设计的学习管理系统，涵盖 8 个单元的知识点、自测题库、
             生物词汇表和专业方向探索。支持学生和教师两种角色。
           </p>
-          <p className="text-xs text-slate-400 mb-8 leading-relaxed">
+          <p className="text-[11px] sm:text-xs text-slate-400 mb-5 sm:mb-8 leading-relaxed">
             A learning management system designed for AP Biology exam preparation, covering 8 units of knowledge, self-test quizzes, biological vocabulary, and major exploration.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <button
               onClick={() => { setShowLogin(true); setError(''); }}
-              className="w-full sm:w-auto px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-lg shadow-lg hover:shadow-xl"
+              className="w-full sm:w-auto px-7 py-2.5 sm:py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-base sm:text-lg shadow-lg hover:shadow-xl"
             >
               登录
-              <span className="block text-sm font-normal opacity-80 mt-0.5">Login</span>
+              <span className="block text-xs sm:text-sm font-normal opacity-80 mt-0.5">Login</span>
             </button>
             <Link
               href="/about"
-              className="w-full sm:w-auto px-8 py-3 bg-white/70 border border-slate-300 text-slate-700 rounded-lg hover:border-teal-600 hover:text-teal-700 transition font-medium text-lg"
+              className="w-full sm:w-auto px-7 py-2.5 sm:py-3 bg-white/70 border border-slate-300 text-slate-700 rounded-lg hover:border-teal-600 hover:text-teal-700 transition font-medium text-base sm:text-lg"
             >
               个人介绍
-              <span className="block text-sm font-normal opacity-60 mt-0.5">Personal-intro</span>
+              <span className="block text-xs sm:text-sm font-normal opacity-60 mt-0.5">Personal-intro</span>
             </Link>
           </div>
-          <div className="mt-8 pt-6 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="mt-5 pt-4 sm:mt-8 sm:pt-6 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-3">
             {heroStats.map((s) => (
               <div key={s.en}>
-                <div className="text-xl font-bold text-slate-900">{s.value}</div>
+                <div className="text-lg sm:text-xl font-bold text-slate-900">{s.value}</div>
                 <div className="text-xs text-slate-500">{s.zh}</div>
                 <div className="text-[10px] text-slate-400">{s.en}</div>
               </div>
@@ -211,20 +211,20 @@ function HomeContent() {
     // Page 2: Features —— 细分割线网格 + 手绘图标
     <div key="features" className="text-center max-w-6xl mx-auto w-full">
       <p className="text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-2">PLATFORM FEATURES</p>
-      <h2 className="text-3xl font-bold text-slate-900 mb-2">平台功能</h2>
-      <p className="text-sm text-slate-400 mb-10">六大模块，覆盖 AP 生物备考全流程</p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-slate-200 border border-slate-200 rounded-xl overflow-hidden text-left mx-4 sm:mx-0">
+      <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">平台功能</h2>
+      <p className="text-xs sm:text-sm text-slate-400 mb-6 sm:mb-10">六大模块，覆盖 AP 生物备考全流程</p>
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-200 border border-slate-200 rounded-xl overflow-hidden text-left">
         {features.map((f, i) => (
-          <div key={i} className="bg-white p-6 transition-colors hover:bg-teal-50/40">
-            <div className="mb-4">
+          <div key={i} className="bg-white p-3.5 sm:p-6 transition-colors hover:bg-teal-50/40">
+            <div className="mb-2 sm:mb-4">
               <f.icon />
             </div>
-            <h3 className="font-semibold text-slate-900 mb-0.5 text-lg">
+            <h3 className="font-semibold text-slate-900 mb-0.5 text-sm sm:text-lg">
               {f.title}
-              <span className="text-xs text-slate-400 font-normal ml-2">{f.titleEn}</span>
+              <span className="text-[10px] sm:text-xs text-slate-400 font-normal ml-2">{f.titleEn}</span>
             </h3>
-            <p className="text-sm text-slate-500 leading-relaxed mb-1">{f.desc}</p>
-            <p className="text-xs text-slate-400 leading-relaxed">{f.descEn}</p>
+            <p className="text-[11px] sm:text-sm text-slate-500 leading-snug sm:leading-relaxed mb-1">{f.desc}</p>
+            <p className="text-[10px] sm:text-xs text-slate-400 leading-snug sm:leading-relaxed">{f.descEn}</p>
           </div>
         ))}
       </div>
@@ -233,22 +233,22 @@ function HomeContent() {
     // Page 3: Units —— 编辑部式编号列表
     <div key="units" className="text-center max-w-4xl mx-auto w-full">
       <p className="text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-2">COURSE MAP</p>
-      <h2 className="text-3xl font-bold text-slate-900 mb-2">AP Biology 单元一览</h2>
-      <p className="text-sm text-slate-400 mb-10">AP Biology Units Overview</p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-14 text-left px-4 sm:px-0">
+      <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">AP Biology 单元一览</h2>
+      <p className="text-xs sm:text-sm text-slate-400 mb-6 sm:mb-10">AP Biology Units Overview</p>
+      <div className="grid grid-cols-2 gap-x-4 sm:gap-x-14 text-left">
         {units.map((unit, i) => (
           <div
             key={unit.id}
-            className="group flex items-baseline gap-4 py-4 border-b border-slate-200 transition-colors hover:border-teal-400"
+            className="group flex items-baseline gap-2.5 sm:gap-4 py-2.5 sm:py-4 border-b border-slate-200 transition-colors hover:border-teal-400"
           >
-            <span className="font-mono text-sm text-slate-300 group-hover:text-teal-600 transition-colors w-7 shrink-0">
+            <span className="font-mono text-xs sm:text-sm text-slate-300 group-hover:text-teal-600 transition-colors w-5 sm:w-7 shrink-0">
               {String(i + 1).padStart(2, '0')}
             </span>
             <div className="flex-1 min-w-0">
-              <div className="text-base font-semibold text-slate-800">{unit.nameZh}</div>
-              <div className="text-xs text-slate-400">{unit.nameEn}</div>
+              <div className="text-[13px] sm:text-base font-semibold text-slate-800">{unit.nameZh}</div>
+              <div className="text-[10px] sm:text-xs text-slate-400">{unit.nameEn}</div>
             </div>
-            <span className="text-[10px] uppercase tracking-widest text-slate-300 group-hover:text-slate-400 transition-colors">
+            <span className="hidden sm:inline text-[10px] uppercase tracking-widest text-slate-300 group-hover:text-slate-400 transition-colors">
               {unit.title}
             </span>
           </div>
@@ -262,16 +262,16 @@ function HomeContent() {
         <IconSprout />
       </div>
       <p className="text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-2">START YOUR JOURNEY</p>
-      <h2 className="text-3xl font-bold text-slate-900 mb-2">开始你的 AP 生物学习之旅</h2>
-      <p className="text-sm text-slate-400 mb-6">Start Your AP Biology Journey</p>
+      <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">开始你的 AP 生物学习之旅</h2>
+      <p className="text-xs sm:text-sm text-slate-400 mb-4 sm:mb-6">Start Your AP Biology Journey</p>
       <button
         onClick={() => { setShowLogin(true); setError(''); }}
-        className="px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-lg shadow-lg"
+        className="px-7 py-2.5 sm:py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-base sm:text-lg shadow-lg"
       >
         立即登录
-        <span className="block text-sm font-normal opacity-80 mt-0.5">Login Now</span>
+        <span className="block text-xs sm:text-sm font-normal opacity-80 mt-0.5">Login Now</span>
       </button>
-      <p className="mt-10 text-xs text-slate-400 tracking-wide">
+      <p className="mt-8 sm:mt-10 text-xs text-slate-400 tracking-wide">
         Biochem-niche v2.2 — AP Biology Learning Platform
       </p>
     </div>,
