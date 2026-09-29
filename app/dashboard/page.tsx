@@ -28,7 +28,7 @@ const studentLinks = [
     href: '/quiz',
     emoji: '📝',
     title: '小测平台',
-    desc: '40 道题，支持限时模式',
+    desc: '200+ 道题，支持限时模式',
     color: 'bg-green-50 border-green-200',
   },
   {
@@ -42,7 +42,7 @@ const studentLinks = [
     href: '/glossary',
     emoji: '📖',
     title: '生物词典',
-    desc: '202+ 专业词汇',
+    desc: '200+ 专业词汇',
     color: 'bg-purple-50 border-purple-200',
   },
   {
@@ -225,8 +225,8 @@ export default function Dashboard() {
               ))
             : [
                 { label: '知识点', value: '53', unit: '个' },
-                { label: '小测题目', value: '40', unit: '道' },
-                { label: '词汇量', value: '202+', unit: '个' },
+                { label: '小测题目', value: '200+', unit: '道' },
+                { label: '词汇量', value: '200+', unit: '个' },
                 { label: '专业方向', value: '10', unit: '个' },
               ].map((stat) => (
                 <div
