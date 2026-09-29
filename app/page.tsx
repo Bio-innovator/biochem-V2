@@ -8,18 +8,6 @@ import { api } from '@/lib/api';
 import FullPageScroll from '@/components/FullPageScroll';
 import DnaHelix from '@/components/DnaHelix';
 
-// Unit definitions
-const units = [
-  { id: 'unit1', title: 'Unit 1', nameEn: 'Chemistry of Life', nameZh: '生命的化学' },
-  { id: 'unit2', title: 'Unit 2', nameEn: 'Cell Structure', nameZh: '细胞结构' },
-  { id: 'unit3', title: 'Unit 3', nameEn: 'Cellular Energetics', nameZh: '细胞能量学' },
-  { id: 'unit4', title: 'Unit 4', nameEn: 'Cell Communication', nameZh: '细胞通讯' },
-  { id: 'unit5', title: 'Unit 5', nameEn: 'Heredity', nameZh: '遗传学' },
-  { id: 'unit6', title: 'Unit 6', nameEn: 'Gene Expression', nameZh: '基因表达' },
-  { id: 'unit7', title: 'Unit 7', nameEn: 'Natural Selection', nameZh: '自然选择' },
-  { id: 'unit8', title: 'Unit 8', nameEn: 'Ecology', nameZh: '生态学' },
-];
-
 // 手绘线条图标（stroke 风格，随文字色变化）
 const iconProps = {
   className: 'w-5 h-5 sm:w-7 sm:h-7 text-teal-700',
@@ -85,6 +73,14 @@ const IconSprout = () => (
     <path d="M12 21v-8" />
     <path d="M12 13c0-3.5 2.8-6 7-6 0 3.8-2.8 6-7 6z" />
     <path d="M12 13c0-3.5-2.8-6-7-6 0 3.8 2.8 6 7 6z" />
+  </svg>
+);
+
+// 暂停符 / 告示图标
+const IconPause = () => (
+  <svg {...iconProps} className="w-7 h-7 sm:w-9 sm:h-9 text-teal-700">
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M9.5 8.5v7M14.5 8.5v7" />
   </svg>
 );
 
@@ -230,29 +226,21 @@ function HomeContent() {
       </div>
     </div>,
 
-    // Page 3: Units —— 编辑部式编号列表
-    <div key="units" className="text-center max-w-4xl mx-auto w-full">
-      <p className="text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-2">COURSE MAP</p>
-      <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">AP Biology 单元一览</h2>
-      <p className="text-xs sm:text-sm text-slate-400 mb-6 sm:mb-10">AP Biology Units Overview</p>
-      <div className="grid grid-cols-2 gap-x-4 sm:gap-x-14 text-left">
-        {units.map((unit, i) => (
-          <div
-            key={unit.id}
-            className="group flex items-baseline gap-2.5 sm:gap-4 py-2.5 sm:py-4 border-b border-slate-200 transition-colors hover:border-teal-400"
-          >
-            <span className="font-mono text-xs sm:text-sm text-slate-300 group-hover:text-teal-600 transition-colors w-5 sm:w-7 shrink-0">
-              {String(i + 1).padStart(2, '0')}
-            </span>
-            <div className="flex-1 min-w-0">
-              <div className="text-[13px] sm:text-base font-semibold text-slate-800">{unit.nameZh}</div>
-              <div className="text-[10px] sm:text-xs text-slate-400">{unit.nameEn}</div>
-            </div>
-            <span className="hidden sm:inline text-[10px] uppercase tracking-widest text-slate-300 group-hover:text-slate-400 transition-colors">
-              {unit.title}
-            </span>
-          </div>
-        ))}
+    // Page 3: Notice —— 注册暂停致歉公告（替代原单元预览）
+    <div key="notice" className="text-center max-w-2xl mx-auto w-full">
+      <div className="flex justify-center mb-6">
+        <IconPause />
+      </div>
+      <p className="text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-2">NOTICE · 公告</p>
+      <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">注册通道暂时关闭</h2>
+      <p className="text-xs sm:text-sm text-slate-400 mb-6 sm:mb-10">Registration Temporarily Closed</p>
+      <div className="bg-white border border-slate-200 rounded-xl px-5 py-6 sm:px-10 sm:py-8 text-left shadow-sm">
+        <p className="text-slate-600 text-[13px] sm:text-[15px] leading-relaxed sm:leading-loose mb-4">
+          非常抱歉，Biochem-niche 目前已关闭新用户注册通道。现阶段平台仅服务于北京师范大学附属中学社区的师生；待平台运营与承载能力进一步稳定后，我们会视情况恢复开放注册。感谢你的理解与关注。
+        </p>
+        <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed">
+          We&apos;re sorry — registration for new users is temporarily closed. Biochem-niche currently serves only the community of the High School Affiliated to Beijing Normal University. Registration may reopen once the platform&apos;s capacity allows. Thank you for your understanding and interest.
+        </p>
       </div>
     </div>,
 

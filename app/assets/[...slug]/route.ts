@@ -25,6 +25,7 @@ const ASSETS: Record<string, AssetEntry> = {
   'ctb':             { file: 'CTB.JPG', kind: 'image' },
   'pap-talk':        { file: 'PAP.png', kind: 'image' },
   'qinling':         { file: '秦岭.jpg', kind: 'image' },
+  'website-dev':     { file: '网站开发.jpg', kind: 'image' },
   // 论文 / 文档（ inline 方式返回，浏览器新标签页直接预览、自带下载按钮 ）
   'ucl-report':      { file: 'UCL project.pdf', kind: 'pdf' },
   'ctb-paper':       { file: 'CTB论文发表.pdf', kind: 'pdf' },
