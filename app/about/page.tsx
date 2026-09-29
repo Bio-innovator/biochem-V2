@@ -232,6 +232,9 @@ const activities: Activity[] = [
       '在付馨悦老师的鼓励与课内 PBL 项目式学习框架下，独立搭建并运营面向学校生物社区的 AP 生物学习平台 Biochem-niche——就是你现在正在浏览的这个网站。毫无全栈经验的我在课余从零自学网页开发，联调 Supabase 数据库与 Vercel 部署时遭遇环境变量、认证与路由重定向的连环报错，最终交叉比对 Error Logs 逐一打通。目标只有一个：帮老师定位知识盲区，帮学生自主学习，让没有资源的学生也能公平地获取知识。',
     introEn:
       "Encouraged by my advisor Ms. Fu within the course's PBL framework, I independently built and now operate Biochem-niche — the very site you are browsing. With no prior full-stack experience, I taught myself web development after class; wiring the Supabase database to Vercel deployment meant an afternoon of cross-reading cryptic error logs until the data flowed. The goal: help teachers spot knowledge gaps, help students learn independently, and make quality resources fair for everyone.",
+    images: [
+      { src: '/assets/website-dev', captionZh: '网站开发与调试的日常', captionEn: 'Building and debugging Biochem-niche' },
+    ],
   },
   {
     index: '09',
@@ -343,6 +346,11 @@ function ActivityPage({ a, total }: { a: Activity; total: number }) {
                   src={img.src}
                   alt={`${a.nameZh} — ${img.captionZh}`}
                   loading="lazy"
+                  onError={(e) => {
+                    // 素材缺失（如图片尚未上传）时整块隐藏，避免出现破图
+                    const fig = e.currentTarget.closest('figure');
+                    if (fig) (fig as HTMLElement).style.display = 'none';
+                  }}
                   className={`block w-auto max-w-full mx-auto border border-slate-200 bg-white grayscale-[45%] hover:grayscale-0 transition duration-500 ${
                     a.images!.length > 1 ? 'max-h-[150px] sm:max-h-[200px] lg:max-h-[220px]' : 'max-h-[180px] sm:max-h-[230px] lg:max-h-[270px]'
                   }`}

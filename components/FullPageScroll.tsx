@@ -99,7 +99,7 @@ export default function FullPageScroll({ pages, bgColors }: FullPageScrollProps)
       lockBriefly();
       if (deltaY > 0) {
         setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
-      } else {
+      } else if (deltaY < 0) {
         setCurrentPage((prev) => Math.max(prev - 1, 0));
       }
     }
@@ -113,9 +113,9 @@ export default function FullPageScroll({ pages, bgColors }: FullPageScrollProps)
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Pages Container */}
+      {/* Pages Container（will-change 提示浏览器单独合成层，翻屏更顺滑） */}
       <div
-        className="h-full transition-transform duration-700 ease-in-out"
+        className="h-full transition-transform duration-700 ease-in-out will-change-transform"
         style={{ transform: `translateY(-${currentPage * 100}%)` }}
       >
         {pages.map((page, index) => (

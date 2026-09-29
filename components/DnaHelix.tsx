@@ -11,6 +11,7 @@ import genesData from '@/data/genes.json';
  * （内容来自 data/genes.json 基因库），左下角按钮可随时开关该功能；
  * 屏幕宽度 ≤560px 时整个组件自动隐藏。
  * 支持暂停 / 播放，并尊重系统的 prefers-reduced-motion 设置。
+ * 性能：主链改为批量路径一次 stroke；滚出屏幕后自动暂停渲染。
  */
 
 interface Gene {
@@ -62,6 +63,7 @@ function HelixCanvas() {
   const [paused, setPaused] = useState(false);
   const labelsOnRef = useRef(true);
   const [labelsOn, setLabelsOn] = useState(true); // 基因标签开关
+  const visibleRef = useRef(true); // 画布是否在可视区域内
   const rafRef = useRef<number>(0);
   const rungsRef = useRef<Rung[]>([]); // 上一帧所有可见竖道的位置
   const hoverKeyRef = useRef<number>(-1); // 当前悬停的竖道
@@ -184,31 +186,48 @@ function HelixCanvas() {
       }
       rungsRef.current = rungs;
 
-      // 主链：后链（透明度低）先画，前链后画，形成穿插的空间感
+      // 主链：把同色同深浅的线段攒进两条路径、各自一次 stroke，
+      // 避免原先每 5px 一次 beginPath/stroke 带来的大量绘制调用
       const drawStrand = (yFn: (x: number) => number, depthSign: 1 | -1, color: string) => {
+        const step = 5;
+        const front: number[][] = [];
+        const back: number[][] = [];
+        let prevX = -margin;
+        let prevY = yFn(prevX);
+        for (let x = -margin + step; x <= width + margin; x += step) {
+          const d = depthSign * depth1(x); // 该链在此处的深浅
+          const y = yFn(x);
+          (d > 0 ? front : back).push([prevX, prevY, x, y]);
+          prevX = x;
+          prevY = y;
+        }
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        const step = 5;
-        let segStart = -margin;
-        for (let x = -margin; x <= width + margin; x += step) {
-          const d = depthSign * depth1(x); // 该链在此处的深浅
-          const front = d > 0;
-          ctx.strokeStyle = color;
-          ctx.globalAlpha = front ? 0.85 : 0.22;
-          ctx.lineWidth = front ? 3 : 2;
-          ctx.beginPath();
-          ctx.moveTo(segStart, yFn(segStart));
-          ctx.lineTo(x, yFn(x));
-          ctx.stroke();
-          segStart = x;
+        ctx.strokeStyle = color;
+        // 后段（透明度低）先画，前段后画，形成穿插的空间感
+        ctx.globalAlpha = 0.22;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (const [x0, y0, x1, y1] of back) {
+          ctx.moveTo(x0, y0);
+          ctx.lineTo(x1, y1);
         }
+        ctx.stroke();
+        ctx.globalAlpha = 0.85;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (const [x0, y0, x1, y1] of front) {
+          ctx.moveTo(x0, y0);
+          ctx.lineTo(x1, y1);
+        }
+        ctx.stroke();
         ctx.globalAlpha = 1;
       };
 
       drawStrand(y2, -1, STRAND_BACK);
       drawStrand(y1, 1, STRAND_FRONT);
 
-      if (!pausedRef.current) {
+      if (!pausedRef.current && visibleRef.current) {
         rafRef.current = requestAnimationFrame(draw);
       }
     };
@@ -222,9 +241,23 @@ function HelixCanvas() {
     };
     (canvas as any).__resume = resume;
 
+    // 画布滚出可视区域（整页翻屏切走）后自动停帧，滚回来再恢复，
+    // 避免在不可见时持续占用 CPU / GPU
+    const io = new IntersectionObserver((entries) => {
+      const visible = entries[0]?.isIntersecting ?? true;
+      visibleRef.current = visible;
+      if (visible && !pausedRef.current) {
+        last = performance.now();
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = requestAnimationFrame(draw);
+      }
+    });
+    io.observe(canvas);
+
     return () => {
       cancelAnimationFrame(rafRef.current);
       ro.disconnect();
+      io.disconnect();
     };
   }, []);
 
