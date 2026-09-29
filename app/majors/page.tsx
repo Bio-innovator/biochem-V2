@@ -1,60 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
+import { useState } from 'react';
+import { MAJORS, type Major } from '@/data/majors';
 
-interface Major {
-  id: string;
-  nameEn: string;
-  nameZh: string;
-  level: string;
-  description: string | null;
-  careers: string | null;
-  skills: string | null;
-}
-
+// 专业数据为代码内置静态库（data/majors.ts），不再请求数据库
 export default function MajorsPage() {
-  const [majors, setMajors] = useState<Major[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<'all' | 'undergraduate' | 'graduate'>('all');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [selectedMajor, setSelectedMajor] = useState<Major | null>(null);
 
-  useEffect(() => {
-    fetchMajors();
-  }, []);
-
-  async function fetchMajors() {
-    try {
-      setLoading(true);
-      const data = await api.get('/api/majors');
-      setMajors(data);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const filtered = selectedLevel === 'all'
-    ? majors
-    : majors.filter((m) => m.level === selectedLevel);
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-400">加载中...</div>;
-  if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
+  const filtered =
+    selectedLevel === 'all' ? MAJORS : MAJORS.filter((m) => m.level === selectedLevel);
 
   return (
     <div className="min-h-screen bg-slate-50 py-6 px-4">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">🎓 专业探索</h1>
+        <h1 className="text-2xl font-bold text-slate-900 mb-1">🎓 专业探索</h1>
+        <p className="text-sm text-slate-400 mb-6">Major Exploration</p>
 
         {/* Level Filter */}
         <div className="bg-white rounded-xl border border-slate-200 p-3 mb-6">
           <div className="flex gap-2">
             {[
-              { id: 'all', label: '全部' },
-              { id: 'undergraduate', label: '本科' },
-              { id: 'graduate', label: '研究生' },
+              { id: 'all', label: '全部', labelEn: 'All' },
+              { id: 'undergraduate', label: '本科', labelEn: 'Undergraduate' },
+              { id: 'graduate', label: '研究生', labelEn: 'Graduate' },
             ].map((l) => (
               <button
                 key={l.id}
@@ -66,6 +35,13 @@ export default function MajorsPage() {
                 }`}
               >
                 {l.label}
+                <span
+                  className={`block text-[10px] font-normal mt-0.5 ${
+                    selectedLevel === l.id ? 'text-teal-100' : 'text-slate-400'
+                  }`}
+                >
+                  {l.labelEn}
+                </span>
               </button>
             ))}
           </div>
@@ -84,31 +60,34 @@ export default function MajorsPage() {
                   <h3 className="font-semibold text-slate-900">{major.nameZh}</h3>
                   <p className="text-sm text-slate-500">{major.nameEn}</p>
                 </div>
-                <span className={`text-[10px] px-2 py-0.5 rounded font-medium ${
-                  major.level === 'undergraduate'
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'bg-purple-50 text-purple-600'
-                }`}>
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded font-medium shrink-0 ${
+                    major.level === 'undergraduate'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'bg-purple-50 text-purple-600'
+                  }`}
+                >
                   {major.level === 'undergraduate' ? '本科' : '研究生'}
                 </span>
               </div>
-              <p className="text-sm text-slate-600 line-clamp-2">{major.description || '暂无介绍'}</p>
-              
-              {major.careers && (
-                <div className="mt-3 flex flex-wrap gap-1">
-                  {major.careers.split(/[,，]/).slice(0, 3).map((c, i) => (
+              <p className="text-sm text-slate-600 line-clamp-2">{major.descriptionZh}</p>
+
+              <div className="mt-3 flex flex-wrap gap-1">
+                {major.careersZh
+                  .split(/[,，]/)
+                  .slice(0, 3)
+                  .map((c, i) => (
                     <span key={i} className="text-[10px] px-2 py-0.5 bg-slate-50 text-slate-500 rounded">
                       {c.trim()}
                     </span>
                   ))}
-                </div>
-              )}
+              </div>
             </div>
           ))}
         </div>
 
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-slate-400">暂无数据</div>
+          <div className="text-center py-12 text-slate-400">暂无数据 No data</div>
         )}
       </div>
 
@@ -131,23 +110,30 @@ export default function MajorsPage() {
 
             <div className="space-y-4">
               <div>
-                <h4 className="text-xs font-medium text-teal-600 mb-1">专业介绍</h4>
-                <p className="text-sm text-slate-700">{selectedMajor.description || '暂无介绍'}</p>
+                <h4 className="text-xs font-medium text-teal-600 mb-1">
+                  专业介绍 <span className="text-slate-400 font-normal">Overview</span>
+                </h4>
+                <p className="text-sm text-slate-700 leading-relaxed">{selectedMajor.descriptionZh}</p>
+                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                  {selectedMajor.descriptionEn}
+                </p>
               </div>
 
-              {selectedMajor.skills && (
-                <div>
-                  <h4 className="text-xs font-medium text-teal-600 mb-1">核心技能</h4>
-                  <p className="text-sm text-slate-700">{selectedMajor.skills}</p>
-                </div>
-              )}
+              <div>
+                <h4 className="text-xs font-medium text-teal-600 mb-1">
+                  核心技能 <span className="text-slate-400 font-normal">Core Skills</span>
+                </h4>
+                <p className="text-sm text-slate-700">{selectedMajor.skillsZh}</p>
+                <p className="text-xs text-slate-400 mt-1">{selectedMajor.skillsEn}</p>
+              </div>
 
-              {selectedMajor.careers && (
-                <div>
-                  <h4 className="text-xs font-medium text-teal-600 mb-1">就业方向</h4>
-                  <p className="text-sm text-slate-700">{selectedMajor.careers}</p>
-                </div>
-              )}
+              <div>
+                <h4 className="text-xs font-medium text-teal-600 mb-1">
+                  就业方向 <span className="text-slate-400 font-normal">Careers</span>
+                </h4>
+                <p className="text-sm text-slate-700">{selectedMajor.careersZh}</p>
+                <p className="text-xs text-slate-400 mt-1">{selectedMajor.careersEn}</p>
+              </div>
             </div>
           </div>
         </div>

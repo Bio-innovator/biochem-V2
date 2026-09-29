@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useAuth, useRole } from '@/components/AuthContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { MAJORS, UNDERGRAD_MAJORS } from '@/data/majors';
 
 const unitColors: Record<string, string> = {
   unit1: 'bg-rose-50 border-rose-200 text-rose-700',
@@ -16,81 +17,122 @@ const unitColors: Record<string, string> = {
   unit8: 'bg-cyan-50 border-cyan-200 text-cyan-700',
 };
 
-const studentLinks = [
+const units = [
+  { id: 'unit1', zh: '生命的化学', en: 'Chemistry of Life' },
+  { id: 'unit2', zh: '细胞结构', en: 'Cell Structure' },
+  { id: 'unit3', zh: '细胞能量学', en: 'Cellular Energetics' },
+  { id: 'unit4', zh: '细胞通讯', en: 'Cell Communication' },
+  { id: 'unit5', zh: '遗传学', en: 'Heredity' },
+  { id: 'unit6', zh: '基因表达', en: 'Gene Expression' },
+  { id: 'unit7', zh: '自然选择', en: 'Natural Selection' },
+  { id: 'unit8', zh: '生态学', en: 'Ecology' },
+];
+
+interface PanelLink {
+  href: string;
+  emoji: string;
+  title: string;
+  titleEn: string;
+  desc: string;
+  descEn: string;
+  color: string;
+}
+
+const studentLinks: PanelLink[] = [
   {
     href: '/knowledge',
     emoji: '📚',
     title: '知识点学习',
+    titleEn: 'Knowledge',
     desc: '8 个单元，53 个知识点',
+    descEn: '53 topics across 8 units',
     color: 'bg-blue-50 border-blue-200',
   },
   {
     href: '/quiz',
     emoji: '📝',
     title: '小测平台',
+    titleEn: 'Quiz',
     desc: '200+ 道题，支持限时模式',
+    descEn: '200+ questions, timed mode',
     color: 'bg-green-50 border-green-200',
   },
   {
     href: '/exams',
     emoji: '📋',
     title: 'AP 真题模考',
+    titleEn: 'AP Exams',
     desc: '历年真题，90 分钟限时',
+    descEn: 'Past papers, 90-minute timer',
     color: 'bg-indigo-50 border-indigo-200',
   },
   {
     href: '/glossary',
     emoji: '📖',
     title: '生物词典',
+    titleEn: 'Glossary',
     desc: '200+ 专业词汇',
+    descEn: '200+ biology terms',
     color: 'bg-purple-50 border-purple-200',
   },
   {
     href: '/majors',
     emoji: '🎓',
     title: '专业探索',
+    titleEn: 'Majors',
     desc: '生物相关专业介绍',
+    descEn: 'Biology-related major guides',
     color: 'bg-amber-50 border-amber-200',
   },
 ];
 
-const teacherLinks = [
+const teacherLinks: PanelLink[] = [
   {
     href: '/classroom',
     emoji: '👨‍🏫',
     title: '班级管理',
+    titleEn: 'Classroom',
     desc: '学生名单与薄弱知识点',
+    descEn: 'Roster & weak spots',
     color: 'bg-orange-50 border-orange-200',
   },
   {
     href: '/knowledge',
     emoji: '📚',
     title: '知识点浏览',
+    titleEn: 'Knowledge',
     desc: '查看所有知识点',
+    descEn: 'Browse all topics',
     color: 'bg-blue-50 border-blue-200',
   },
   {
     href: '/quiz',
     emoji: '📝',
     title: '小测题目',
+    titleEn: 'Quiz',
     desc: '查看题目与解析',
+    descEn: 'Questions & explanations',
     color: 'bg-green-50 border-green-200',
   },
 ];
 
-const adminLinks = [
+const adminLinks: PanelLink[] = [
   {
     href: '/admin',
     emoji: '⚙️',
     title: '系统管理',
+    titleEn: 'Admin',
     desc: '用户审核与数据统计',
+    descEn: 'User review & stats',
     color: 'bg-red-50 border-red-200',
   },
   {
     href: '/classroom',
     emoji: '📊',
     title: '班级概览',
+    titleEn: 'Classroom',
     desc: '查看所有班级数据',
+    descEn: 'All class data',
     color: 'bg-orange-50 border-orange-200',
   },
 ];
@@ -100,12 +142,22 @@ export default function Dashboard() {
   const role = useRole();
   const router = useRouter();
 
+  // 学生个人学习统计（真实数据：/api/student/stats）
   const [stats, setStats] = useState({
     totalQuizzes: 0,
     avgScore: 0,
     errorCount: 0,
   });
   const [statsLoading, setStatsLoading] = useState(true);
+
+  // 平台内容实时统计（真实数据：/api/stats，教师与管理员视图用）
+  const [platform, setPlatform] = useState<{
+    topics: number;
+    quizzes: number;
+    terms: number;
+    exams: number;
+  } | null>(null);
+  const [platformLoading, setPlatformLoading] = useState(true);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -138,10 +190,35 @@ export default function Dashboard() {
       });
   }, [token, role]);
 
+  useEffect(() => {
+    if (isLoading || !role || role === 'student') {
+      if (!isLoading) setPlatformLoading(false);
+      return;
+    }
+    fetch('/api/stats')
+      .then(async (res) => {
+        if (!res.ok) throw new Error('fetch failed');
+        return res.json();
+      })
+      .then((data) => {
+        setPlatform({
+          topics: data.topics || 0,
+          quizzes: data.quizzes || 0,
+          terms: data.terms || 0,
+          exams: data.exams || 0,
+        });
+        setPlatformLoading(false);
+      })
+      .catch(() => setPlatformLoading(false));
+  }, [role, isLoading]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-slate-400">加载中...</div>
+        <div className="text-slate-400">
+          加载中...
+          <span className="block text-xs text-slate-300 mt-1">Loading...</span>
+        </div>
       </div>
     );
   }
@@ -150,25 +227,89 @@ export default function Dashboard() {
 
   let links = studentLinks;
   let welcomeText = '学生控制台';
+  let welcomeTextEn = 'Student Dashboard';
   if (role === 'teacher') {
     links = teacherLinks;
     welcomeText = '教师控制台';
+    welcomeTextEn = 'Teacher Dashboard';
   }
   if (role === 'admin') {
     links = adminLinks;
     welcomeText = '管理员控制台';
+    welcomeTextEn = 'Admin Dashboard';
   }
 
   const isStudent = role === 'student';
+
+  const platformValue = (n?: number) =>
+    platformLoading ? '...' : platform ? String(n ?? 0) : '—';
+
+  const statCards = isStudent
+    ? [
+        {
+          label: '已完成小测',
+          labelEn: 'Quizzes Done',
+          value: statsLoading ? '...' : stats.totalQuizzes.toString(),
+          unit: '次',
+        },
+        {
+          label: '平均正确率',
+          labelEn: 'Avg. Accuracy',
+          value: statsLoading ? '...' : `${stats.avgScore}%`,
+          unit: '',
+        },
+        {
+          label: '错题本',
+          labelEn: 'Error Book',
+          value: statsLoading ? '...' : stats.errorCount.toString(),
+          unit: '道',
+        },
+        {
+          label: '本科专业方向',
+          labelEn: 'Undergrad Majors',
+          value: UNDERGRAD_MAJORS.length.toString(),
+          unit: '个',
+        },
+      ]
+    : [
+        {
+          label: '知识点',
+          labelEn: 'Topics',
+          value: platformValue(platform?.topics),
+          unit: '个',
+        },
+        {
+          label: '小测题目',
+          labelEn: 'Quiz Questions',
+          value: platformValue(platform?.quizzes),
+          unit: '道',
+        },
+        {
+          label: '词汇量',
+          labelEn: 'Glossary Terms',
+          value: platformValue(platform?.terms),
+          unit: '个',
+        },
+        {
+          label: '专业方向',
+          labelEn: 'Majors',
+          value: MAJORS.length.toString(),
+          unit: '个',
+        },
+      ];
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">{welcomeText}</h1>
+          <h1 className="text-2xl font-bold text-slate-900 mb-0.5">{welcomeText}</h1>
+          <p className="text-xs text-slate-400 mb-2">{welcomeTextEn}</p>
           <p className="text-slate-500">
             欢迎回来，{user.displayName || user.username}！
+            <span className="block text-xs text-slate-400 mt-0.5">
+              Welcome back, {user.displayName || user.username}!
+            </span>
           </p>
         </div>
 
@@ -181,87 +322,46 @@ export default function Dashboard() {
               className={`${link.color} border rounded-xl p-5 hover:shadow-md transition`}
             >
               <div className="text-3xl mb-2">{link.emoji}</div>
-              <h3 className="font-semibold text-slate-900 mb-1">{link.title}</h3>
+              <h3 className="font-semibold text-slate-900 mb-1">
+                {link.title}
+                <span className="text-xs text-slate-400 font-normal ml-2">{link.titleEn}</span>
+              </h3>
               <p className="text-sm text-slate-500">{link.desc}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{link.descEn}</p>
             </Link>
           ))}
         </div>
 
         {/* Stats Summary */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-          {isStudent
-            ? [
-                {
-                  label: '已完成小测',
-                  value: statsLoading ? '...' : stats.totalQuizzes.toString(),
-                  unit: '次',
-                },
-                {
-                  label: '平均正确率',
-                  value: statsLoading ? '...' : `${stats.avgScore}%`,
-                  unit: '',
-                },
-                {
-                  label: '错题本',
-                  value: statsLoading ? '...' : stats.errorCount.toString(),
-                  unit: '道',
-                },
-                {
-                  label: '专业方向',
-                  value: '10',
-                  unit: '个',
-                },
-              ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="bg-white rounded-lg border border-slate-200 p-4 text-center"
-                >
-                  <div className="text-2xl font-bold text-teal-600">{stat.value}</div>
-                  <div className="text-xs text-slate-500">
-                    {stat.label}
-                    {stat.unit}
-                  </div>
-                </div>
-              ))
-            : [
-                { label: '知识点', value: '53', unit: '个' },
-                { label: '小测题目', value: '200+', unit: '道' },
-                { label: '词汇量', value: '200+', unit: '个' },
-                { label: '专业方向', value: '10', unit: '个' },
-              ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="bg-white rounded-lg border border-slate-200 p-4 text-center"
-                >
-                  <div className="text-2xl font-bold text-teal-600">{stat.value}</div>
-                  <div className="text-xs text-slate-500">
-                    {stat.label}
-                    {stat.unit}
-                  </div>
-                </div>
-              ))}
+          {statCards.map((stat) => (
+            <div
+              key={stat.label}
+              className="bg-white rounded-lg border border-slate-200 p-4 text-center"
+            >
+              <div className="text-2xl font-bold text-teal-600">{stat.value}</div>
+              <div className="text-xs text-slate-500">
+                {stat.label}
+                {stat.unit}
+              </div>
+              <div className="text-[10px] text-slate-400 mt-0.5">{stat.labelEn}</div>
+            </div>
+          ))}
         </div>
 
         {/* Unit Quick Access */}
         <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <h2 className="font-semibold text-slate-900 mb-3">单元快速导航</h2>
+          <h2 className="font-semibold text-slate-900 mb-0.5">单元快速导航</h2>
+          <p className="text-xs text-slate-400 mb-3">Quick Unit Navigation</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {[
-              { id: 'unit1', label: '生命的化学' },
-              { id: 'unit2', label: '细胞结构' },
-              { id: 'unit3', label: '细胞能量学' },
-              { id: 'unit4', label: '细胞通讯' },
-              { id: 'unit5', label: '遗传学' },
-              { id: 'unit6', label: '基因表达' },
-              { id: 'unit7', label: '自然选择' },
-              { id: 'unit8', label: '生态学' },
-            ].map((u) => (
+            {units.map((u) => (
               <Link
                 key={u.id}
                 href={`/knowledge?unit=${u.id}`}
-                className={`text-xs px-3 py-2 rounded-lg border text-center transition hover:shadow-sm ${unitColors[u.id]}`}
+                className={`px-3 py-2 rounded-lg border text-center transition hover:shadow-sm ${unitColors[u.id]}`}
               >
-                {u.label}
+                <span className="block text-xs font-medium">{u.zh}</span>
+                <span className="block text-[10px] opacity-70 mt-0.5">{u.en}</span>
               </Link>
             ))}
           </div>
