@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/components/AuthContext';
+import { addQuizRecord } from '@/lib/quizRecords';
 
 interface Quiz {
   id: string;
@@ -108,6 +109,12 @@ export default function QuizPage() {
     try {
       const score = finalAnswers.filter((a) => a.correct).length;
       const total = currentQuestions.length;
+      const unit = selectedUnit === 'all' ? 'mixed' : selectedUnit;
+
+      // 浏览器本地记录（面板统计与趋势图读取这里）
+      addQuizRecord({ unit, total, correct: score });
+
+      // 同步到后台（供教师端班级统计使用；失败不影响本地记录）
       await fetch('/api/quiz/submit', {
         method: 'POST',
         headers: {
@@ -115,14 +122,15 @@ export default function QuizPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          unit: selectedUnit === 'all' ? 'mixed' : selectedUnit,
+          unit,
           answers: finalAnswers.map((a) => ({
             quizId: a.qid,
-            selected: a.selected,
-            correct: a.correct,
+            selectedOption: a.selected,
+            isCorrect: a.correct,
           })),
           score,
-          total,
+          totalQuestions: total,
+          correctCount: score,
         }),
       });
     } catch (e) {

@@ -5,6 +5,7 @@ import { useAuth, useRole } from '@/components/AuthContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MAJORS, UNDERGRAD_MAJORS } from '@/data/majors';
+import { getQuizRecords, type QuizRecord } from '@/lib/quizRecords';
 
 const unitColors: Record<string, string> = {
   unit1: 'bg-rose-50 border-rose-200 text-rose-700',
@@ -137,18 +138,94 @@ const adminLinks: PanelLink[] = [
   },
 ];
 
+/** 正确率趋势图（手绘 SVG，无第三方依赖） */
+function AccuracyTrend({ records }: { records: QuizRecord[] }) {
+  const data = records.slice(-20); // 最近 20 次
+  const W = 640;
+  const H = 180;
+  const PX = 34;
+  const PY = 18;
+
+  const x = (i: number) =>
+    data.length === 1 ? W / 2 : PX + (i * (W - PX * 2)) / (data.length - 1);
+  const y = (v: number) => H - PY - (v / 100) * (H - PY * 2);
+
+  const points = data.map((r, i) => `${x(i)},${y(r.accuracy)}`).join(' ');
+  const area = `${PX},${y(0)} ${points} ${x(data.length - 1)},${y(0)}`;
+
+  const fmt = (iso: string) => {
+    const d = new Date(iso);
+    return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-5 mb-8">
+      <h2 className="font-semibold text-slate-900 mb-0.5">正确率趋势</h2>
+      <p className="text-xs text-slate-400 mb-3">Accuracy Trend</p>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Accuracy trend">
+        {/* 横向网格线 */}
+        {[0, 25, 50, 75, 100].map((v) => (
+          <g key={v}>
+            <line
+              x1={PX}
+              x2={W - 8}
+              y1={y(v)}
+              y2={y(v)}
+              stroke={v === 0 ? '#cbd5e1' : '#e2e8f0'}
+              strokeWidth="1"
+              strokeDasharray={v === 0 ? undefined : '3 4'}
+            />
+            <text x={6} y={y(v) + 3.5} fontSize="9" fill="#94a3b8">
+              {v}
+            </text>
+          </g>
+        ))}
+        {/* 面积填充 */}
+        {data.length > 1 && <polygon points={area} fill="#0d9488" opacity="0.07" />}
+        {/* 折线 */}
+        {data.length > 1 && (
+          <polyline
+            points={points}
+            fill="none"
+            stroke="#0d9488"
+            strokeWidth="2.5"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+        )}
+        {/* 数据点（悬停显示详情） */}
+        {data.map((r, i) => (
+          <circle
+            key={i}
+            cx={x(i)}
+            cy={y(r.accuracy)}
+            r="4"
+            fill="white"
+            stroke="#0d9488"
+            strokeWidth="2"
+          >
+            <title>{`${fmt(r.date)} · ${r.correct}/${r.total} · ${r.accuracy}%`}</title>
+          </circle>
+        ))}
+      </svg>
+      <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+        <span>{fmt(data[0].date)}</span>
+        <span>
+          最近 {data.length} 次 · Latest {data.length}
+        </span>
+        <span>{fmt(data[data.length - 1].date)}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
-  const { user, isLoading, token } = useAuth();
+  const { user, isLoading } = useAuth();
   const role = useRole();
   const router = useRouter();
 
-  // 学生个人学习统计（真实数据：/api/student/stats）
-  const [stats, setStats] = useState({
-    totalQuizzes: 0,
-    avgScore: 0,
-    errorCount: 0,
-  });
-  const [statsLoading, setStatsLoading] = useState(true);
+  // 学生个人学习统计：读取浏览器本地记录（localStorage）
+  const [records, setRecords] = useState<QuizRecord[]>([]);
 
   // 平台内容实时统计（真实数据：/api/stats，教师与管理员视图用）
   const [platform, setPlatform] = useState<{
@@ -166,29 +243,10 @@ export default function Dashboard() {
   }, [user, isLoading, router]);
 
   useEffect(() => {
-    if (!token || role !== 'student') {
-      setStatsLoading(false);
-      return;
+    if (role === 'student') {
+      setRecords(getQuizRecords());
     }
-    fetch('/api/student/stats', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error('获取统计数据失败');
-        return res.json();
-      })
-      .then((data) => {
-        setStats({
-          totalQuizzes: data.totalQuizzes || 0,
-          avgScore: data.avgScore || 0,
-          errorCount: (data.errorBook || []).length,
-        });
-        setStatsLoading(false);
-      })
-      .catch(() => {
-        setStatsLoading(false);
-      });
-  }, [token, role]);
+  }, [role]);
 
   useEffect(() => {
     if (isLoading || !role || role === 'student') {
@@ -241,6 +299,14 @@ export default function Dashboard() {
 
   const isStudent = role === 'student';
 
+  // 学生统计（来自浏览器本地记录）
+  const totalQuizzes = records.length;
+  const avgScore =
+    totalQuizzes > 0
+      ? Math.round(records.reduce((s, r) => s + r.accuracy, 0) / totalQuizzes)
+      : 0;
+  const totalMistakes = records.reduce((s, r) => s + (r.total - r.correct), 0);
+
   const platformValue = (n?: number) =>
     platformLoading ? '...' : platform ? String(n ?? 0) : '—';
 
@@ -249,19 +315,19 @@ export default function Dashboard() {
         {
           label: '已完成小测',
           labelEn: 'Quizzes Done',
-          value: statsLoading ? '...' : stats.totalQuizzes.toString(),
+          value: totalQuizzes.toString(),
           unit: '次',
         },
         {
           label: '平均正确率',
           labelEn: 'Avg. Accuracy',
-          value: statsLoading ? '...' : `${stats.avgScore}%`,
+          value: `${avgScore}%`,
           unit: '',
         },
         {
-          label: '错题本',
-          labelEn: 'Error Book',
-          value: statsLoading ? '...' : stats.errorCount.toString(),
+          label: '累计错题',
+          labelEn: 'Mistakes',
+          value: totalMistakes.toString(),
           unit: '道',
         },
         {
@@ -348,6 +414,21 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
+
+        {/* Accuracy Trend —— 仅学生视图 */}
+        {isStudent &&
+          (records.length > 0 ? (
+            <AccuracyTrend records={records} />
+          ) : (
+            <div className="bg-white rounded-xl border border-dashed border-slate-300 p-6 mb-8 text-center">
+              <p className="text-sm text-slate-500">
+                完成一次小测后，这里会显示你的正确率趋势
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                Finish a quiz and your accuracy trend will appear here
+              </p>
+            </div>
+          ))}
 
         {/* Unit Quick Access */}
         <div className="bg-white rounded-xl border border-slate-200 p-5">
