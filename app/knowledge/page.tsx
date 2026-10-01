@@ -3,6 +3,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
+import { TOPIC_CHAINS } from '@/data/topicLinks';
+import { TOPIC_VIDEOS } from '@/data/topicVideos';
 
 interface KnowledgeTopic {
   id: string;
@@ -75,6 +77,19 @@ function KnowledgeContent() {
     setFiltered(result);
   }
 
+  const topicsByTitle = new Map(topics.map((t) => [t.titleEn, t]));
+
+  function jumpToTopic(titleEn: string) {
+    const target = topicsByTitle.get(titleEn);
+    if (!target) return;
+    setSelectedUnit(target.unit);
+    setSearchQuery('');
+    setExpandedId(target.id);
+    window.setTimeout(() => {
+      document.getElementById(`topic-${target.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 60);
+  }
+
   if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-400">加载中...</div>;
   if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
 
@@ -120,7 +135,8 @@ function KnowledgeContent() {
           {filtered.map((topic) => (
             <div
               key={topic.id}
-              className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-sm transition"
+              id={`topic-${topic.id}`}
+              className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-sm transition scroll-mt-20"
             >
               <button
                 onClick={() => setExpandedId(expandedId === topic.id ? null : topic.id)}
@@ -177,6 +193,82 @@ function KnowledgeContent() {
                       </ul>
                     </div>
                   </div>
+
+                  {/* 知识关联链 · Knowledge Chains */}
+                  {TOPIC_CHAINS[topic.titleEn] && (
+                    <div className="mt-5">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                        知识关联链 · Knowledge Chains（前置知识 → 本知识点 → 延伸知识）
+                      </p>
+                      <div className="space-y-2">
+                        {TOPIC_CHAINS[topic.titleEn].map((chain, ci) => (
+                          <div key={ci} className="flex flex-wrap items-center gap-1.5">
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-medium shrink-0 ${
+                                chain.scope === 'intra'
+                                  ? 'bg-teal-50 text-teal-700'
+                                  : 'bg-violet-50 text-violet-700'
+                              }`}
+                            >
+                              {chain.scope === 'intra' ? '单元内' : '跨单元'}
+                            </span>
+                            {chain.nodes.map((node, ni) => {
+                              const target = topicsByTitle.get(node);
+                              const isCurrent = node === topic.titleEn;
+                              return (
+                                <span key={ni} className="flex items-center gap-1.5">
+                                  {ni > 0 && <span className="text-slate-300 text-xs">→</span>}
+                                  {isCurrent ? (
+                                    <span className="px-2 py-0.5 rounded-full bg-teal-600 text-white text-xs font-medium">
+                                      {topic.titleZh}
+                                    </span>
+                                  ) : target ? (
+                                    <button
+                                      onClick={() => jumpToTopic(node)}
+                                      className="px-2 py-0.5 rounded-full bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-xs text-slate-700 transition-colors text-left"
+                                      title={node}
+                                    >
+                                      {target.titleZh}
+                                      <span className="hidden md:inline text-slate-400"> · {node}</span>
+                                    </button>
+                                  ) : (
+                                    <span className="px-2 py-0.5 rounded-full bg-slate-100 text-xs text-slate-500">
+                                      {node}
+                                    </span>
+                                  )}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 讲解视频 · Recommended Videos */}
+                  {TOPIC_VIDEOS[topic.titleEn] && (
+                    <div className="mt-5">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                        讲解视频 · Recommended Videos
+                      </p>
+                      <div className="space-y-2">
+                        {TOPIC_VIDEOS[topic.titleEn].map((video, vi) => (
+                          <div key={vi} className="bg-slate-50 rounded-lg px-3 py-2">
+                            <a
+                              href={video.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-medium text-teal-600 hover:text-teal-700 hover:underline"
+                            >
+                              ▶ {video.title} · {video.source}
+                            </a>
+                            <p className="text-[11px] text-slate-600 mt-0.5">{video.descZh}</p>
+                            <p className="text-[10px] text-slate-400">{video.descEn}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
