@@ -55,7 +55,7 @@ function EventDetail({ event }: { event: LifeEvent }) {
   );
 }
 
-/** 主日历卡片：只显示本月，不可翻页 */
+/** 主日历卡片：只显示本月，不可翻页（紧凑版） */
 export default function LifeCalendar() {
   const now = new Date();
   const year = now.getFullYear();
@@ -93,10 +93,10 @@ export default function LifeCalendar() {
   const selectedEvent = monthEvents[selected];
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5">
-      <div className="flex items-start justify-between gap-3 mb-4">
+    <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-3 mb-3">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">
+          <h2 className="text-base font-bold text-slate-900">
             生命教育日历 · Life Education Calendar
           </h2>
           <p className="text-xs text-slate-500">
@@ -105,7 +105,7 @@ export default function LifeCalendar() {
         </div>
         <button
           onClick={togglePopup}
-          className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+          className={`shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium transition ${
             popupEnabled
               ? 'bg-teal-50 text-teal-700 hover:bg-teal-100'
               : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
@@ -115,47 +115,50 @@ export default function LifeCalendar() {
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 mb-1">
-        {WEEKDAYS.map((d) => (
-          <div key={d.en} className="text-center text-[10px] font-medium text-slate-400 py-1">
-            {d.zh} {d.en}
-          </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-7 gap-1">
-        {cells.map((day, i) => {
-          if (day === null) return <div key={`e-${i}`} />;
-          const event = monthEvents[day];
-          const isToday = day === today;
-          const isSelected = day === selected;
-          return (
-            <button
-              key={day}
-              onClick={() => setSelected(day)}
-              className={`relative aspect-square rounded-lg text-sm flex flex-col items-center justify-center gap-0.5 transition ${
-                isSelected
-                  ? 'bg-teal-600 text-white'
-                  : isToday
-                  ? 'bg-teal-50 text-teal-700 font-semibold'
-                  : event
-                  ? 'bg-slate-50 text-slate-700 hover:bg-slate-100'
-                  : 'text-slate-400 hover:bg-slate-50'
-              }`}
-            >
-              {day}
-              {event && (
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    isSelected ? 'bg-white' : LIFE_EVENT_STYLE[event.type].dot
-                  }`}
-                />
-              )}
-            </button>
-          );
-        })}
+      {/* 限制日历网格宽度，保持格子紧凑 */}
+      <div className="max-w-sm mx-auto">
+        <div className="grid grid-cols-7 gap-0.5 mb-0.5">
+          {WEEKDAYS.map((d) => (
+            <div key={d.en} className="text-center text-[10px] font-medium text-slate-400 py-0.5">
+              {d.zh} {d.en}
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-0.5">
+          {cells.map((day, i) => {
+            if (day === null) return <div key={`e-${i}`} />;
+            const event = monthEvents[day];
+            const isToday = day === today;
+            const isSelected = day === selected;
+            return (
+              <button
+                key={day}
+                onClick={() => setSelected(day)}
+                className={`relative aspect-square rounded-md text-xs flex flex-col items-center justify-center gap-0.5 transition ${
+                  isSelected
+                    ? 'bg-teal-600 text-white'
+                    : isToday
+                    ? 'bg-teal-50 text-teal-700 font-semibold'
+                    : event
+                    ? 'bg-slate-50 text-slate-700 hover:bg-slate-100'
+                    : 'text-slate-400 hover:bg-slate-50'
+                }`}
+              >
+                {day}
+                {event && (
+                  <span
+                    className={`w-1 h-1 rounded-full ${
+                      isSelected ? 'bg-white' : LIFE_EVENT_STYLE[event.type].dot
+                    }`}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 mt-3 text-[10px] text-slate-500">
+      <div className="flex flex-wrap justify-center gap-3 mt-3 text-[10px] text-slate-500">
         {(Object.keys(LIFE_EVENT_STYLE) as LifeEventType[]).map((t) => (
           <span key={t} className="flex items-center gap-1">
             <span className={`w-2 h-2 rounded-full ${LIFE_EVENT_STYLE[t].dot}`} />
@@ -165,7 +168,7 @@ export default function LifeCalendar() {
       </div>
 
       {selectedEvent && (
-        <div className="mt-4 bg-slate-50 rounded-lg p-4">
+        <div className="mt-3 bg-slate-50 rounded-lg p-4 max-w-2xl mx-auto">
           <EventDetail event={selectedEvent} />
         </div>
       )}
