@@ -209,24 +209,25 @@ export function LifeCalendarPopup() {
           ✕
         </button>
         <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-2">
-          今日生命教育 · Today\u2019s Life Education
+          今日生命教育 · Today&apos;s Life Education
         </p>
         <EventDetail event={event} />
         <button
           onClick={dismissToday}
           className="mt-5 w-full py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium transition"
         >
-          今日不再弹出 · Don\u2019t show again today
+          今日不再弹出 · Don&apos;t show again today
         </button>
       </div>
     </div>
   );
 }
 
-/** 首页底部轻量横幅：展示今日条目 */
+/** 首页顶部横幅：仅展示今日条目名称，20 秒自动消失，可勾选今日不再弹出 */
 export function LifeCalendarBanner() {
   const [visible, setVisible] = useState(false);
   const [event, setEvent] = useState<LifeEvent | null>(null);
+  const [dontShow, setDontShow] = useState(false);
 
   useEffect(() => {
     try {
@@ -239,25 +240,57 @@ export function LifeCalendarBanner() {
     } catch {}
   }, []);
 
+  // 20 秒无人操作自动消失
+  useEffect(() => {
+    if (!visible) return;
+    const timer = window.setTimeout(() => setVisible(false), 20000);
+    return () => window.clearTimeout(timer);
+  }, [visible]);
+
   if (!visible || !event) return null;
 
+  function toggleDontShow(checked: boolean) {
+    setDontShow(checked);
+    try {
+      if (checked) {
+        localStorage.setItem(DISMISS_KEY, todayKey());
+      } else {
+        localStorage.removeItem(DISMISS_KEY);
+      }
+    } catch {}
+  }
+
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-lg">
-      <div className="bg-white/95 backdrop-blur rounded-xl shadow-lg border border-slate-200 px-4 py-3 flex items-center gap-3">
-        <span className={`w-2 h-2 rounded-full shrink-0 ${LIFE_EVENT_STYLE[event.type].dot}`} />
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-slate-900 truncate">
+    <div
+      className="fixed top-20 left-1/2 z-40 w-[calc(100%-2rem)] max-w-md"
+      style={{ animation: 'lifeBannerIn 0.35s ease-out', transform: 'translateX(-50%)' }}
+    >
+      <style>{`@keyframes lifeBannerIn { from { opacity: 0; transform: translate(-50%, -16px); } to { opacity: 1; transform: translate(-50%, 0); } }`}</style>
+      <div className="bg-white/95 backdrop-blur rounded-xl shadow-lg border border-slate-200 px-4 pt-2.5 pb-1">
+        <div className="flex items-center gap-2.5">
+          <span className={`w-2 h-2 rounded-full shrink-0 ${LIFE_EVENT_STYLE[event.type].dot}`} />
+          <p className="flex-1 min-w-0 text-sm font-medium text-slate-900 truncate">
             {event.titleZh} · {event.titleEn}
           </p>
-          <p className="text-[10px] text-slate-500 truncate">{event.contentZh}</p>
+          <button
+            onClick={() => setVisible(false)}
+            className="shrink-0 text-slate-400 hover:text-slate-600 leading-none"
+            aria-label="Close"
+          >
+            ✕
+          </button>
         </div>
-        <button
-          onClick={() => setVisible(false)}
-          className="shrink-0 text-slate-400 hover:text-slate-600 leading-none"
-          aria-label="Close"
-        >
-          ✕
-        </button>
+        <label className="flex items-center justify-center gap-1.5 mt-1 pb-0.5 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={dontShow}
+            onChange={(e) => toggleDontShow(e.target.checked)}
+            className="w-3 h-3 accent-teal-600"
+          />
+          <span className="text-[10px] text-slate-400">
+            今日不再弹出 · Don&apos;t show again today
+          </span>
+        </label>
       </div>
     </div>
   );
