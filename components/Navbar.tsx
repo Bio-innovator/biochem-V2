@@ -8,6 +8,7 @@ const navItems = {
     { href: '/', label: '首页', labelEn: 'First-page' },
     { href: '/story', label: '网站故事', labelEn: 'Website-story' },
     { href: '/about', label: '个人介绍', labelEn: 'Personal-intro' },
+    { href: '/feedback', label: '建议反馈', labelEn: 'Feedback' },
   ],
   student: [
     { href: '/dashboard', label: '控制台', labelEn: 'Dashboard' },
@@ -16,6 +17,7 @@ const navItems = {
     { href: '/exams', label: 'AP测验', labelEn: 'AP Exams' },
     { href: '/glossary', label: '词典', labelEn: 'Glossary' },
     { href: '/majors', label: '专业', labelEn: 'Majors' },
+    { href: '/feedback', label: '建议反馈', labelEn: 'Feedback' },
   ],
   teacher: [
     { href: '/dashboard', label: '控制台', labelEn: 'Dashboard' },
@@ -99,7 +101,11 @@ export default function Navbar() {
               <div className="w-16 h-6 bg-slate-100 rounded animate-pulse" />
             ) : user ? (
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded-md">
+                <Link
+                  href="/dashboard"
+                  title="回到控制台 / Back to Dashboard"
+                  className="hidden sm:flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded-md hover:bg-teal-50 transition-colors"
+                >
                   <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center text-xs">
                     {user.displayName?.[0] || user.username[0]}
                   </div>
@@ -109,7 +115,7 @@ export default function Navbar() {
                   <span className="text-[10px] px-1.5 py-0.5 bg-slate-200 rounded text-slate-500 capitalize">
                     {user.role}
                   </span>
-                </div>
+                </Link>
                 <button
                   onClick={logout}
                   className="group px-2 py-1 rounded-md text-center hover:bg-slate-50 transition-colors"

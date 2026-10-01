@@ -7,6 +7,7 @@ import { useAuth } from '@/components/AuthContext';
 import { api } from '@/lib/api';
 import FullPageScroll from '@/components/FullPageScroll';
 import DnaHelix from '@/components/DnaHelix';
+import { LifeCalendarBanner } from '@/components/LifeCalendar';
 
 // 手绘线条图标（stroke 风格，随文字色变化）
 const iconProps = {
@@ -127,24 +128,6 @@ function HomeContent() {
     }
   };
 
-  // If logged in, redirect to dashboard
-  if (user) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg text-slate-600 mb-4">
-            欢迎回来，{user.displayName || user.username}！
-            <span className="block text-sm text-slate-400 mt-1">Welcome back!</span>
-          </p>
-          <Link href="/dashboard" className="text-teal-600 hover:underline">
-            前往控制台 →
-            <span className="block text-sm text-slate-400 mt-1">Go to Dashboard</span>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   const pages = [
     // Page 1: Hero —— 生成式 DNA 双螺旋 + 白色文字岛
     <div key="hero" className="absolute inset-0 overflow-hidden">
@@ -161,6 +144,14 @@ function HomeContent() {
             AP Biology 智能学习平台
           </p>
           <p className="text-[11px] sm:text-xs text-slate-400 mt-1 mb-4 sm:mb-6">AP Biology Intelligent Learning Platform</p>
+          {user && (
+            <p className="text-teal-700 font-medium mb-2 text-sm sm:text-base">
+              欢迎回来，{user.displayName || user.username}！
+              <span className="block text-[11px] text-slate-400 mt-0.5 font-normal">
+                Welcome back, {user.displayName || user.username}!
+              </span>
+            </p>
+          )}
           <p className="text-slate-500 mb-2 text-[13px] sm:text-base leading-relaxed">
             专为 AP 生物学考试设计的学习管理系统，涵盖 8 个单元的知识点、自测题库、
             生物词汇表和专业方向探索。支持学生和教师两种角色。
@@ -169,13 +160,23 @@ function HomeContent() {
             A learning management system designed for AP Biology exam preparation, covering 8 units of knowledge, self-test quizzes, biological vocabulary, and major exploration.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-            <button
-              onClick={() => { setShowLogin(true); setError(''); }}
-              className="w-full sm:w-auto px-7 py-2.5 sm:py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-base sm:text-lg shadow-lg hover:shadow-xl"
-            >
-              登录
-              <span className="block text-xs sm:text-sm font-normal opacity-80 mt-0.5">Login</span>
-            </button>
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="w-full sm:w-auto px-7 py-2.5 sm:py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-base sm:text-lg shadow-lg hover:shadow-xl"
+              >
+                进入控制台
+                <span className="block text-xs sm:text-sm font-normal opacity-80 mt-0.5">Go to Dashboard</span>
+              </Link>
+            ) : (
+              <button
+                onClick={() => { setShowLogin(true); setError(''); }}
+                className="w-full sm:w-auto px-7 py-2.5 sm:py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-base sm:text-lg shadow-lg hover:shadow-xl"
+              >
+                登录
+                <span className="block text-xs sm:text-sm font-normal opacity-80 mt-0.5">Login</span>
+              </button>
+            )}
             <Link
               href="/about"
               className="w-full sm:w-auto px-7 py-2.5 sm:py-3 bg-white/70 border border-slate-300 text-slate-700 rounded-lg hover:border-teal-600 hover:text-teal-700 transition font-medium text-base sm:text-lg"
@@ -252,13 +253,23 @@ function HomeContent() {
       <p className="text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-2">START YOUR JOURNEY</p>
       <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">开始你的 AP 生物学习之旅</h2>
       <p className="text-xs sm:text-sm text-slate-400 mb-4 sm:mb-6">Start Your AP Biology Journey</p>
-      <button
-        onClick={() => { setShowLogin(true); setError(''); }}
-        className="px-7 py-2.5 sm:py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-base sm:text-lg shadow-lg"
-      >
-        立即登录
-        <span className="block text-xs sm:text-sm font-normal opacity-80 mt-0.5">Login Now</span>
-      </button>
+      {user ? (
+        <Link
+          href="/dashboard"
+          className="inline-block px-7 py-2.5 sm:py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-base sm:text-lg shadow-lg"
+        >
+          进入控制台
+          <span className="block text-xs sm:text-sm font-normal opacity-80 mt-0.5">Go to Dashboard</span>
+        </Link>
+      ) : (
+        <button
+          onClick={() => { setShowLogin(true); setError(''); }}
+          className="px-7 py-2.5 sm:py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-base sm:text-lg shadow-lg"
+        >
+          立即登录
+          <span className="block text-xs sm:text-sm font-normal opacity-80 mt-0.5">Login Now</span>
+        </button>
+      )}
       <p className="mt-8 sm:mt-10 text-xs text-slate-400 tracking-wide">
         Biochem-niche v2.2 — AP Biology Learning Platform
       </p>
@@ -270,6 +281,7 @@ function HomeContent() {
   return (
     <>
       <FullPageScroll pages={pages} bgColors={bgColors} />
+      <LifeCalendarBanner />
 
       {/* Login Modal */}
       {showLogin && (
