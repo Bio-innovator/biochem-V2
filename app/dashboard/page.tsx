@@ -220,6 +220,54 @@ function AccuracyTrend({ records }: { records: QuizRecord[] }) {
   );
 }
 
+/** 作业模块 —— 纯展示，当前固定为「今日无作业」 */
+function HomeworkModule() {
+  const now = new Date();
+  const weekdaysZh = ['日', '一', '二', '三', '四', '五', '六'];
+  const weekdaysEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dateZh = `${now.getFullYear()} 年 ${now.getMonth() + 1} 月 ${now.getDate()} 日 · 星期${weekdaysZh[now.getDay()]}`;
+  const dateEn = `${weekdaysEn[now.getDay()]}, ${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 mb-8">
+      <div className="flex items-start justify-between gap-3 mb-6">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900">作业</h2>
+          <p className="text-xs text-slate-400 mt-0.5">Homework</p>
+        </div>
+        <div className="text-right shrink-0">
+          <p className="text-xs text-slate-500">{dateZh}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">{dateEn}</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center justify-center py-8 sm:py-12">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-teal-50 flex items-center justify-center mb-4">
+          <svg
+            className="w-8 h-8 sm:w-10 sm:h-10 text-teal-600"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            viewBox="0 0 24 24"
+            aria-hidden
+          >
+            <path d="M9 5.5H6.5A1.5 1.5 0 0 0 5 7v12a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19V7a1.5 1.5 0 0 0-1.5-1.5H15" />
+            <path d="M9 5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5v1A1.5 1.5 0 0 1 13.5 8h-3A1.5 1.5 0 0 1 9 6.5z" />
+            <path d="M8.5 13.5l2.5 2.5 4.5-5" />
+          </svg>
+        </div>
+        <p className="text-2xl sm:text-3xl font-bold text-slate-900">今日无作业</p>
+        <p className="text-sm text-slate-400 mt-1">No homework today</p>
+        <p className="text-xs text-slate-400 mt-4">
+          老师布置作业后会显示在这里 · Assignments from your teacher will appear here
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
   const role = useRole();
@@ -381,24 +429,28 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Quick Links */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`${link.color} border rounded-xl p-5 hover:shadow-md transition`}
-            >
-              <div className="text-3xl mb-2">{link.emoji}</div>
-              <h3 className="font-semibold text-slate-900 mb-1">
-                {link.title}
-                <span className="text-xs text-slate-400 font-normal ml-2">{link.titleEn}</span>
-              </h3>
-              <p className="text-sm text-slate-500">{link.desc}</p>
-              <p className="text-xs text-slate-400 mt-0.5">{link.descEn}</p>
-            </Link>
-          ))}
-        </div>
+        {/* 学生视图：作业模块（纯展示）；教师/管理员视图：快捷导航 */}
+        {isStudent ? (
+          <HomeworkModule />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`${link.color} border rounded-xl p-5 hover:shadow-md transition`}
+              >
+                <div className="text-3xl mb-2">{link.emoji}</div>
+                <h3 className="font-semibold text-slate-900 mb-1">
+                  {link.title}
+                  <span className="text-xs text-slate-400 font-normal ml-2">{link.titleEn}</span>
+                </h3>
+                <p className="text-sm text-slate-500">{link.desc}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{link.descEn}</p>
+              </Link>
+            ))}
+          </div>
+        )}
 
         {/* Stats Summary */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
