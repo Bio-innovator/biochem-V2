@@ -34,13 +34,22 @@ const navItems = {
   ],
 };
 
+// 公开页面：登录后访问这些页面时，显示公开导航 + 控制台入口
+const PUBLIC_PATHS = ['/', '/story', '/about', '/feedback'];
+
 export default function Navbar() {
   const { user, logout, isLoading } = useAuth();
   const role = useRole();
   const pathname = usePathname();
 
   let items: typeof navItems.public = [];
-  if (!user) {
+  if (user && PUBLIC_PATHS.includes(pathname ?? '')) {
+    // 登录状态回到公开页：三个首页标题 + 控制台
+    items = [
+      ...navItems.public,
+      { href: '/dashboard', label: '控制台', labelEn: 'Dashboard' },
+    ];
+  } else if (!user) {
     items = navItems.public;
   } else if (role === 'student') {
     items = navItems.student;
