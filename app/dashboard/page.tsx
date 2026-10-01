@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MAJORS, UNDERGRAD_MAJORS } from '@/data/majors';
 import { getQuizRecords, type QuizRecord } from '@/lib/quizRecords';
+import LifeCalendar, { LifeCalendarPopup } from '@/components/LifeCalendar';
 
 const unitColors: Record<string, string> = {
   unit1: 'bg-rose-50 border-rose-200 text-rose-700',
@@ -366,6 +367,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4">
+      {isStudent && <LifeCalendarPopup />}
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -447,6 +449,13 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
+
+        {/* 生命教育日历 —— 仅学生视图，位于页面最下方 */}
+        {isStudent && (
+          <div className="mt-8">
+            <LifeCalendar />
+          </div>
+        )}
       </div>
     </div>
   );
