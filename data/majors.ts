@@ -1,6 +1,5 @@
 // 专业方向静态数据库 —— 随代码直接发布，不再依赖数据库
-// 专业名称参考哈佛、耶鲁、普林斯顿、宾大、哥伦比亚、康奈尔、布朗等校的
-// 生物相关学科设置（本科 12 个 + 研究生 6 个），内容为自撰中英双语介绍
+// 专业名称参考美国顶尖高校的生物相关学科设置（本科 12 个 + 研究生 6 个），内容为自撰中英双语介绍
 
 export interface Major {
   id: string;
@@ -23,9 +22,9 @@ export const MAJORS: Major[] = [
     nameZh: '分子与细胞生物学',
     level: 'undergraduate',
     descriptionZh:
-      '研究细胞与分子层面的生命机制，涵盖基因表达调控、细胞信号转导、蛋白质结构与功能。哈佛的 MCB 是该方向的代表项目，也是通往医学院的主流路径之一。',
+      '研究细胞与分子层面的生命机制，涵盖基因表达调控、细胞信号转导、蛋白质结构与功能。这是生物学最核心的方向之一，也是通往医学院的主流路径。',
     descriptionEn:
-      'Studies life at the molecular and cellular level — gene regulation, signaling, and protein function. Harvard\'s MCB is a flagship program and a classic pre-med path.',
+      'Studies life at the molecular and cellular level — gene regulation, signaling, and protein function. A core track in biology and a classic pre-med path.',
     skillsZh: '分子克隆、蛋白纯化、细胞培养、荧光显微成像',
     skillsEn: 'Molecular cloning, protein purification, cell culture, fluorescence microscopy',
     careersZh: '医学院、科研机构、生物技术公司、制药企业',
@@ -51,9 +50,9 @@ export const MAJORS: Major[] = [
     nameZh: '神经科学',
     level: 'undergraduate',
     descriptionZh:
-      '从分子、神经环路到行为多个层级研究神经系统。布朗、哥伦比亚等校设有独立本科专业，常与医学研究和人工智能交叉。',
+      '从分子、神经环路到行为多个层级研究神经系统，在许多顶尖大学都设有独立本科专业，常与医学研究和人工智能交叉。',
     descriptionEn:
-      'Studies the nervous system from molecules and circuits to behavior. A standalone major at Brown and Columbia, often crossing into medicine and AI.',
+      'Studies the nervous system from molecules and circuits to behavior — a standalone major at many top universities, often crossing into medicine and AI.',
     skillsZh: '电生理记录、动物行为学实验、脑成像、数据分析',
     skillsEn: 'Electrophysiology, behavioral assays, brain imaging, data analysis',
     careersZh: '神经科研、医学、脑机接口、制药',
@@ -65,9 +64,9 @@ export const MAJORS: Major[] = [
     nameZh: '生态学与进化生物学',
     level: 'undergraduate',
     descriptionZh:
-      '研究物种多样性、进化机制与生态系统动态，包含大量野外调查与统计建模，是普林斯顿与耶鲁的招牌方向。',
+      '研究物种多样性、进化机制与生态系统动态，包含大量野外调查与统计建模，是许多研究型大学的招牌方向。',
     descriptionEn:
-      'Biodiversity, evolution, and ecosystem dynamics with heavy fieldwork and statistical modeling — signature programs at Princeton and Yale.',
+      'Biodiversity, evolution, and ecosystem dynamics with heavy fieldwork and statistical modeling — a signature track at many research universities.',
     skillsZh: '样方与野外调查、物种鉴定、统计建模、GIS 分析',
     skillsEn: 'Quadrat & field surveys, taxonomy, statistical modeling, GIS',
     careersZh: '生态保护机构、环境咨询、科研院所、自然资源管理',
@@ -79,9 +78,9 @@ export const MAJORS: Major[] = [
     nameZh: '生物医学工程',
     level: 'undergraduate',
     descriptionZh:
-      '用工程手段解决医学问题：医学影像、生物材料、器械设计与组织工程，课程横跨生物、物理与工程，哥伦比亚与宾大均有强势项目。',
+      '用工程手段解决医学问题：医学影像、生物材料、器械设计与组织工程，课程横跨生物、物理与工程，是工科强校的热门方向。',
     descriptionEn:
-      'Applies engineering to medicine — imaging, biomaterials, devices, and tissue engineering — spanning biology, physics, and engineering at Columbia and Penn.',
+      'Applies engineering to medicine — imaging, biomaterials, devices, and tissue engineering — spanning biology, physics, and engineering.',
     skillsZh: '生物材料、信号处理、CAD 制图、原型设计',
     skillsEn: 'Biomaterials, signal processing, CAD, prototyping',
     careersZh: '医疗器械、生物材料企业、临床工程、继续深造',
@@ -93,9 +92,9 @@ export const MAJORS: Major[] = [
     nameZh: '生物工程',
     level: 'undergraduate',
     descriptionZh:
-      '宾大的代表性交叉学科，覆盖合成生物学、药物递送与生物系统的设计改造，强调“设计—构建—测试”的工程思维。',
+      '代表性的交叉学科，覆盖合成生物学、药物递送与生物系统的设计改造，强调“设计—构建—测试”的工程思维。',
     descriptionEn:
-      'Penn\'s flagship interdisciplinary track — synthetic biology, drug delivery, and biological systems design, built on the design-build-test cycle.',
+      'A flagship interdisciplinary track — synthetic biology, drug delivery, and biological systems design, built on the design-build-test cycle.',
     skillsZh: '基因线路设计、发酵工艺、系统建模、实验自动化',
     skillsEn: 'Gene-circuit design, fermentation, systems modeling, lab automation',
     careersZh: '合成生物学公司、生物制造、制药、科技创业',
@@ -107,9 +106,9 @@ export const MAJORS: Major[] = [
     nameZh: '计算生物学',
     level: 'undergraduate',
     descriptionZh:
-      '用算法与统计方法处理基因组等大规模生物数据，是生物与计算机科学的交叉学科，康奈尔、布朗均设有本科项目。',
+      '用算法与统计方法处理基因组等大规模生物数据，是生物与计算机科学的交叉学科，不少高校设有独立本科项目。',
     descriptionEn:
-      'Applies algorithms and statistics to large-scale genomic data — the CS–biology crossover, with undergraduate programs at Cornell and Brown.',
+      'Applies algorithms and statistics to large-scale genomic data — the CS–biology crossover, offered as a dedicated undergraduate program at many universities.',
     skillsZh: 'Python / R、序列比对分析、机器学习、统计推断',
     skillsEn: 'Python / R, sequence analysis, machine learning, statistical inference',
     careersZh: '生物信息岗位、药企数据科学、科研机构',
@@ -121,9 +120,9 @@ export const MAJORS: Major[] = [
     nameZh: '化学与物理生物学',
     level: 'undergraduate',
     descriptionZh:
-      '哈佛特色专业，用物理与化学的定量工具研究生物体系——单分子技术、生物物理与化学生物学的结合，适合数理基础扎实的学生。',
+      '极具特色的交叉专业，用物理与化学的定量工具研究生物体系——单分子技术、生物物理与化学生物学的结合，适合数理基础扎实的学生。',
     descriptionEn:
-      'A Harvard specialty — studying biological systems with quantitative tools from physics and chemistry, from single-molecule methods to chemical biology.',
+      'A distinctive specialty — studying biological systems with quantitative tools from physics and chemistry, from single-molecule methods to chemical biology.',
     skillsZh: '单分子技术、光谱学、定量建模、仪器搭建',
     skillsEn: 'Single-molecule techniques, spectroscopy, quantitative modeling, instrumentation',
     careersZh: '科研院所、制药研发、医学院、交叉学科深造',
@@ -163,9 +162,9 @@ export const MAJORS: Major[] = [
     nameZh: '植物生物学',
     level: 'undergraduate',
     descriptionZh:
-      '康奈尔的传统强项：植物发育、光合作用与环境适应、作物改良，把分子生物学连接到农业、生态与食品安全。',
+      '农学强校的传统强项：植物发育、光合作用与环境适应、作物改良，把分子生物学连接到农业、生态与食品安全。',
     descriptionEn:
-      'A Cornell strength — plant development, photosynthesis, environmental adaptation, and crop improvement, linking molecular biology to agriculture and food security.',
+      'A traditional strength of agricultural powerhouses — plant development, photosynthesis, environmental adaptation, and crop improvement, linking molecular biology to agriculture and food security.',
     skillsZh: '植物分子生物学、温室实验、田间试验设计',
     skillsEn: 'Plant molecular biology, greenhouse experiments, field-trial design',
     careersZh: '农业科技、种业公司、生态研究机构',
@@ -177,9 +176,9 @@ export const MAJORS: Major[] = [
     nameZh: '认知科学',
     level: 'undergraduate',
     descriptionZh:
-      '耶鲁、宾大等校的交叉专业，从心理学、神经科学与计算的角度研究心智与行为，可选择神经科学或计算方向深化。',
+      '许多顶尖高校开设的交叉专业，从心理学、神经科学与计算的角度研究心智与行为，可选择神经科学或计算方向深化。',
     descriptionEn:
-      'An interdisciplinary major at Yale and Penn — mind and behavior through psychology, neuroscience, and computation, with tracks into neuroscience or AI.',
+      'An interdisciplinary major at many top universities — mind and behavior through psychology, neuroscience, and computation, with tracks into neuroscience or AI.',
     skillsZh: '实验设计、行为数据分析、计算建模',
     skillsEn: 'Experimental design, behavioral data analysis, computational modeling',
     careersZh: '科研机构、用户体验研究、医学、人工智能',
@@ -234,9 +233,9 @@ export const MAJORS: Major[] = [
     nameZh: '流行病学与公共卫生',
     level: 'graduate',
     descriptionZh:
-      '用统计方法与人群数据研究疾病的分布、成因与干预策略，新冠疫情后全球需求显著上升，常春藤各校均设有公共卫生学院。',
+      '用统计方法与人群数据研究疾病的分布、成因与干预策略，新冠疫情后全球需求显著上升，许多顶尖大学均设有公共卫生学院。',
     descriptionEn:
-      'Studies disease distribution and interventions with population-level data and statistics; demand surged after COVID-19, with schools of public health across the Ivy League.',
+      'Studies disease distribution and interventions with population-level data and statistics; demand surged after COVID-19, and many top universities run dedicated schools of public health.',
     skillsZh: '流行病学方法、生物统计、卫生政策分析',
     skillsEn: 'Epidemiological methods, biostatistics, health policy analysis',
     careersZh: '疾控中心、国际组织、卫生政策机构',
@@ -250,7 +249,7 @@ export const MAJORS: Major[] = [
     descriptionZh:
       '面向产业的硕士项目，融合分子技术、生物工艺与商业化课程，培养直通生物医药产业的复合型人才。',
     descriptionEn:
-      'An industry-oriented master\'s combining molecular techniques, bioprocessing, and commercialization — a direct pipeline into biopharma.',
+      "An industry-oriented master's combining molecular techniques, bioprocessing, and commercialization — a direct pipeline into biopharma.",
     skillsZh: '生物工艺开发、GMP 规范、项目管理',
     skillsEn: 'Bioprocess development, GMP, project management',
     careersZh: '生物医药公司、技术转移办公室、产品管理',
@@ -264,7 +263,7 @@ export const MAJORS: Major[] = [
     descriptionZh:
       '研究生层面聚焦神经环路与分子机制，常用模式动物、光遗传与成像技术解析大脑的工作原理，与阿尔兹海默症等疾病研究直接相关。',
     descriptionEn:
-      'Graduate focus on neural circuits and molecular mechanisms, using model organisms, optogenetics, and imaging to decode the brain — directly relevant to diseases like Alzheimer\'s.',
+      "Graduate focus on neural circuits and molecular mechanisms, using model organisms, optogenetics, and imaging to decode the brain — directly relevant to diseases like Alzheimer's.",
     skillsZh: '神经环路示踪、光遗传学、钙成像',
     skillsEn: 'Circuit tracing, optogenetics, calcium imaging',
     careersZh: '神经科学研究、药企、脑科学研究机构',
