@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useAuth, useRole } from '@/components/AuthContext';
+import { useLang } from '@/components/LanguageContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MAJORS, UNDERGRAD_MAJORS } from '@/data/majors';
@@ -141,6 +142,8 @@ const adminLinks: PanelLink[] = [
 
 /** 正确率趋势图（手绘 SVG，无第三方依赖） */
 function AccuracyTrend({ records }: { records: QuizRecord[] }) {
+  const { lang } = useLang();
+  const zh = lang === 'zh';
   const data = records.slice(-20); // 最近 20 次
   const W = 640;
   const H = 180;
@@ -161,8 +164,8 @@ function AccuracyTrend({ records }: { records: QuizRecord[] }) {
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 mb-8">
-      <h2 className="font-semibold text-slate-900 mb-0.5">正确率趋势</h2>
-      <p className="text-xs text-slate-400 mb-3">Accuracy Trend</p>
+      <h2 className="font-semibold text-slate-900 mb-0.5">{zh ? '正确率趋势' : 'Accuracy Trend'}</h2>
+      <p className="text-xs text-slate-400 mb-3">{zh ? '最近 20 次小测' : 'Your last 20 quizzes'}</p>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Accuracy trend">
         {/* 横向网格线 */}
         {[0, 25, 50, 75, 100].map((v) => (
@@ -211,9 +214,7 @@ function AccuracyTrend({ records }: { records: QuizRecord[] }) {
       </svg>
       <div className="flex justify-between text-[10px] text-slate-400 mt-1">
         <span>{fmt(data[0].date)}</span>
-        <span>
-          最近 {data.length} 次 · Latest {data.length}
-        </span>
+        <span>{zh ? `最近 ${data.length} 次` : `Latest ${data.length}`}</span>
         <span>{fmt(data[data.length - 1].date)}</span>
       </div>
     </div>
@@ -222,22 +223,25 @@ function AccuracyTrend({ records }: { records: QuizRecord[] }) {
 
 /** 作业模块 —— 纯展示，当前固定为「今日无作业」 */
 function HomeworkModule() {
+  const { lang } = useLang();
+  const zh = lang === 'zh';
   const now = new Date();
   const weekdaysZh = ['日', '一', '二', '三', '四', '五', '六'];
+  const monthsEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const weekdaysEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const dateZh = `${now.getFullYear()} 年 ${now.getMonth() + 1} 月 ${now.getDate()} 日 · 星期${weekdaysZh[now.getDay()]}`;
-  const dateEn = `${weekdaysEn[now.getDay()]}, ${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const dateStr = zh
+    ? `${now.getFullYear()} 年 ${now.getMonth() + 1} 月 ${now.getDate()} 日 · 星期${weekdaysZh[now.getDay()]}`
+    : `${weekdaysEn[now.getDay()]}, ${monthsEn[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 mb-8">
       <div className="flex items-start justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">作业</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Homework</p>
+          <h2 className="text-lg font-bold text-slate-900">{zh ? '作业' : 'Homework'}</h2>
+          <p className="text-xs text-slate-400 mt-0.5">{zh ? '老师布置的任务会出现在这里' : 'Assignments from your teacher appear here'}</p>
         </div>
         <div className="text-right shrink-0">
-          <p className="text-xs text-slate-500">{dateZh}</p>
-          <p className="text-[10px] text-slate-400 mt-0.5">{dateEn}</p>
+          <p className="text-xs text-slate-500">{dateStr}</p>
         </div>
       </div>
 
@@ -258,10 +262,9 @@ function HomeworkModule() {
             <path d="M8.5 13.5l2.5 2.5 4.5-5" />
           </svg>
         </div>
-        <p className="text-2xl sm:text-3xl font-bold text-slate-900">今日无作业</p>
-        <p className="text-sm text-slate-400 mt-1">No homework today</p>
+        <p className="text-2xl sm:text-3xl font-bold text-slate-900">{zh ? '今日无作业' : 'No homework today'}</p>
         <p className="text-xs text-slate-400 mt-4">
-          老师布置作业后会显示在这里 · Assignments from your teacher will appear here
+          {zh ? '好好复习，或者去生命日历看看今天的科普吧' : 'Enjoy the break — or check today\u2019s note in the Life Calendar'}
         </p>
       </div>
     </div>
@@ -272,6 +275,8 @@ export default function Dashboard() {
   const { user, isLoading } = useAuth();
   const role = useRole();
   const router = useRouter();
+  const { lang } = useLang();
+  const zh = lang === 'zh';
 
   // 学生个人学习统计：读取浏览器本地记录（localStorage）
   const [records, setRecords] = useState<QuizRecord[]>([]);
@@ -322,10 +327,7 @@ export default function Dashboard() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-slate-400">
-          加载中...
-          <span className="block text-xs text-slate-300 mt-1">Loading...</span>
-        </div>
+        <div className="text-slate-400">{zh ? '加载中...' : 'Loading...'}</div>
       </div>
     );
   }
@@ -333,17 +335,14 @@ export default function Dashboard() {
   if (!user) return null;
 
   let links = studentLinks;
-  let welcomeText = '学生控制台';
-  let welcomeTextEn = 'Student Dashboard';
+  let welcomeText = zh ? '学生控制台' : 'Student Dashboard';
   if (role === 'teacher') {
     links = teacherLinks;
-    welcomeText = '教师控制台';
-    welcomeTextEn = 'Teacher Dashboard';
+    welcomeText = zh ? '教师控制台' : 'Teacher Dashboard';
   }
   if (role === 'admin') {
     links = adminLinks;
-    welcomeText = '管理员控制台';
-    welcomeTextEn = 'Admin Dashboard';
+    welcomeText = zh ? '管理员控制台' : 'Admin Dashboard';
   }
 
   const isStudent = role === 'student';
@@ -361,56 +360,16 @@ export default function Dashboard() {
 
   const statCards = isStudent
     ? [
-        {
-          label: '已完成小测',
-          labelEn: 'Quizzes Done',
-          value: totalQuizzes.toString(),
-          unit: '次',
-        },
-        {
-          label: '平均正确率',
-          labelEn: 'Avg. Accuracy',
-          value: `${avgScore}%`,
-          unit: '',
-        },
-        {
-          label: '累计错题',
-          labelEn: 'Mistakes',
-          value: totalMistakes.toString(),
-          unit: '道',
-        },
-        {
-          label: '本科专业方向',
-          labelEn: 'Undergrad Majors',
-          value: UNDERGRAD_MAJORS.length.toString(),
-          unit: '个',
-        },
+        { label: zh ? '已完成小测' : 'Quizzes Done', value: totalQuizzes.toString() },
+        { label: zh ? '平均正确率' : 'Avg. Accuracy', value: `${avgScore}%` },
+        { label: zh ? '累计错题' : 'Mistakes', value: totalMistakes.toString() },
+        { label: zh ? '本科专业方向' : 'Undergrad Majors', value: UNDERGRAD_MAJORS.length.toString() },
       ]
     : [
-        {
-          label: '知识点',
-          labelEn: 'Topics',
-          value: platformValue(platform?.topics),
-          unit: '个',
-        },
-        {
-          label: '小测题目',
-          labelEn: 'Quiz Questions',
-          value: platformValue(platform?.quizzes),
-          unit: '道',
-        },
-        {
-          label: '词汇量',
-          labelEn: 'Glossary Terms',
-          value: platformValue(platform?.terms),
-          unit: '个',
-        },
-        {
-          label: '专业方向',
-          labelEn: 'Majors',
-          value: MAJORS.length.toString(),
-          unit: '个',
-        },
+        { label: zh ? '知识点' : 'Topics', value: platformValue(platform?.topics) },
+        { label: zh ? '小测题目' : 'Quiz Questions', value: platformValue(platform?.quizzes) },
+        { label: zh ? '词汇量' : 'Glossary Terms', value: platformValue(platform?.terms) },
+        { label: zh ? '专业方向' : 'Majors', value: MAJORS.length.toString() },
       ];
 
   return (
@@ -419,13 +378,9 @@ export default function Dashboard() {
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-slate-900 mb-0.5">{welcomeText}</h1>
-          <p className="text-xs text-slate-400 mb-2">{welcomeTextEn}</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">{welcomeText}</h1>
           <p className="text-slate-500">
-            欢迎回来，{user.displayName || user.username}！
-            <span className="block text-xs text-slate-400 mt-0.5">
-              Welcome back, {user.displayName || user.username}!
-            </span>
+            {zh ? `欢迎回来，${user.displayName || user.username}！` : `Welcome back, ${user.displayName || user.username}!`}
           </p>
         </div>
 
@@ -441,12 +396,8 @@ export default function Dashboard() {
                 className={`${link.color} border rounded-xl p-5 hover:shadow-md transition`}
               >
                 <div className="text-3xl mb-2">{link.emoji}</div>
-                <h3 className="font-semibold text-slate-900 mb-1">
-                  {link.title}
-                  <span className="text-xs text-slate-400 font-normal ml-2">{link.titleEn}</span>
-                </h3>
-                <p className="text-sm text-slate-500">{link.desc}</p>
-                <p className="text-xs text-slate-400 mt-0.5">{link.descEn}</p>
+                <h3 className="font-semibold text-slate-900 mb-1">{zh ? link.title : link.titleEn}</h3>
+                <p className="text-sm text-slate-500">{zh ? link.desc : link.descEn}</p>
               </Link>
             ))}
           </div>
@@ -460,11 +411,7 @@ export default function Dashboard() {
               className="bg-white rounded-lg border border-slate-200 p-4 text-center"
             >
               <div className="text-2xl font-bold text-teal-600">{stat.value}</div>
-              <div className="text-xs text-slate-500">
-                {stat.label}
-                {stat.unit}
-              </div>
-              <div className="text-[10px] text-slate-400 mt-0.5">{stat.labelEn}</div>
+              <div className="text-xs text-slate-500">{stat.label}</div>
             </div>
           ))}
         </div>
@@ -476,18 +423,15 @@ export default function Dashboard() {
           ) : (
             <div className="bg-white rounded-xl border border-dashed border-slate-300 p-6 mb-8 text-center">
               <p className="text-sm text-slate-500">
-                完成一次小测后，这里会显示你的正确率趋势
-              </p>
-              <p className="text-xs text-slate-400 mt-1">
-                Finish a quiz and your accuracy trend will appear here
+                {zh ? '完成一次小测后，这里会显示你的正确率趋势' : 'Finish a quiz and your accuracy trend will appear here'}
               </p>
             </div>
           ))}
 
         {/* Unit Quick Access */}
         <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <h2 className="font-semibold text-slate-900 mb-0.5">单元快速导航</h2>
-          <p className="text-xs text-slate-400 mb-3">Quick Unit Navigation</p>
+          <h2 className="font-semibold text-slate-900 mb-0.5">{zh ? '单元快速导航' : 'Quick Unit Navigation'}</h2>
+          <p className="text-xs text-slate-400 mb-3">{zh ? '点击任意单元，直达对应知识点' : 'Jump straight to any unit'}</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {units.map((u) => (
               <Link
@@ -495,8 +439,7 @@ export default function Dashboard() {
                 href={`/knowledge?unit=${u.id}`}
                 className={`px-3 py-2 rounded-lg border text-center transition hover:shadow-sm ${unitColors[u.id]}`}
               >
-                <span className="block text-xs font-medium">{u.zh}</span>
-                <span className="block text-[10px] opacity-70 mt-0.5">{u.en}</span>
+                <span className="block text-xs font-medium">{zh ? u.zh : u.en}</span>
               </Link>
             ))}
           </div>

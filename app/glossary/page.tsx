@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
+import { useLang } from '@/components/LanguageContext';
 
 interface GlossaryTerm {
   id: string;
@@ -13,20 +14,22 @@ interface GlossaryTerm {
 }
 
 const units = [
-  { id: 'all', label: '全部' },
-  { id: 'unit1', label: 'Unit 1' },
-  { id: 'unit2', label: 'Unit 2' },
-  { id: 'unit3', label: 'Unit 3' },
-  { id: 'unit4', label: 'Unit 4' },
-  { id: 'unit5', label: 'Unit 5' },
-  { id: 'unit6', label: 'Unit 6' },
-  { id: 'unit7', label: 'Unit 7' },
-  { id: 'unit8', label: 'Unit 8' },
+  { id: 'all', labelZh: '全部', labelEn: 'All' },
+  { id: 'unit1', labelZh: 'Unit 1', labelEn: 'Unit 1' },
+  { id: 'unit2', labelZh: 'Unit 2', labelEn: 'Unit 2' },
+  { id: 'unit3', labelZh: 'Unit 3', labelEn: 'Unit 3' },
+  { id: 'unit4', labelZh: 'Unit 4', labelEn: 'Unit 4' },
+  { id: 'unit5', labelZh: 'Unit 5', labelEn: 'Unit 5' },
+  { id: 'unit6', labelZh: 'Unit 6', labelEn: 'Unit 6' },
+  { id: 'unit7', labelZh: 'Unit 7', labelEn: 'Unit 7' },
+  { id: 'unit8', labelZh: 'Unit 8', labelEn: 'Unit 8' },
 ];
 
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 export default function GlossaryPage() {
+  const { lang } = useLang();
+  const zh = lang === 'zh';
   const [terms, setTerms] = useState<GlossaryTerm[]>([]);
   const [filtered, setFiltered] = useState<GlossaryTerm[]>([]);
   const [selectedUnit, setSelectedUnit] = useState('all');
@@ -82,19 +85,19 @@ export default function GlossaryPage() {
     setFiltered(result);
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-400">加载中...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-400">{zh ? '加载中...' : 'Loading...'}</div>;
   if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
 
   return (
     <div className="min-h-screen bg-slate-50 py-6 px-4">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">📖 生物词典</h1>
+        <h1 className="text-2xl font-bold text-slate-900 mb-6">📖 {zh ? '生物词典' : 'Biology Glossary'}</h1>
 
         {/* Filters */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 mb-6 space-y-4">
           {/* Unit Select */}
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">单元筛选</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">{zh ? '单元筛选' : 'Filter by unit'}</label>
             <div className="flex flex-wrap gap-1.5">
               {units.map((u) => (
                 <button
@@ -106,7 +109,7 @@ export default function GlossaryPage() {
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  {u.label}
+                  {zh ? u.labelZh : u.labelEn}
                 </button>
               ))}
             </div>
@@ -114,7 +117,7 @@ export default function GlossaryPage() {
 
           {/* A-Z Filter */}
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">字母索引</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">{zh ? '字母索引' : 'A–Z index'}</label>
             <div className="flex flex-wrap gap-1">
               <button
                 onClick={() => setSelectedLetter('')}
@@ -124,7 +127,7 @@ export default function GlossaryPage() {
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
-                全
+                {zh ? '全' : 'All'}
               </button>
               {alphabet.map((letter) => (
                 <button
@@ -147,13 +150,15 @@ export default function GlossaryPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="搜索词汇（中英文均可）..."
+            placeholder={zh ? '搜索词汇（中英文均可）...' : 'Search terms (English or Chinese)...'}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-sm"
           />
         </div>
 
         {/* Results count */}
-        <p className="text-sm text-slate-500 mb-3">共 {filtered.length} 个词汇</p>
+        <p className="text-sm text-slate-500 mb-3">
+          {zh ? `共 ${filtered.length} 个词汇` : `${filtered.length} terms`}
+        </p>
 
         {/* Terms Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -181,12 +186,12 @@ export default function GlossaryPage() {
 
         {filtered.length === 0 && (
           <div className="text-center py-12 text-slate-400">
-            <p>没有找到匹配的词汇</p>
+            <p>{zh ? '没有找到匹配的词汇' : 'No matching terms found'}</p>
             <button
               onClick={() => { setSelectedUnit('all'); setSelectedLetter(''); setSearchQuery(''); }}
               className="text-teal-600 text-sm hover:underline mt-2"
             >
-              清除筛选条件
+              {zh ? '清除筛选条件' : 'Clear filters'}
             </button>
           </div>
         )}
