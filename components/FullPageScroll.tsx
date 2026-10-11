@@ -5,9 +5,11 @@ import { useState, useCallback, useRef, useEffect, ReactNode } from 'react';
 interface FullPageScrollProps {
   pages: ReactNode[];
   bgColors?: string[];
+  /** 每个翻页圆点悬停时显示的短名称（如 CIS、CTB）；不传则不显示 */
+  dotLabels?: string[];
 }
 
-export default function FullPageScroll({ pages, bgColors }: FullPageScrollProps) {
+export default function FullPageScroll({ pages, bgColors, dotLabels }: FullPageScrollProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const isScrolling = useRef(false);
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -27,6 +29,16 @@ export default function FullPageScroll({ pages, bgColors }: FullPageScrollProps)
     },
     [totalPages]
   );
+
+  // 供页面内部元素（如目录）跳转：window.dispatchEvent(new CustomEvent('fps:goto', { detail: index }))
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const idx = (e as CustomEvent<number>).detail;
+      if (typeof idx === 'number') goToPage(idx);
+    };
+    window.addEventListener('fps:goto', handler);
+    return () => window.removeEventListener('fps:goto', handler);
+  }, [goToPage]);
 
   // 当前页内容若还能继续向 deltaY 方向滚动，则把滚轮留给页面内部
   const innerCanScroll = useCallback(
@@ -105,6 +117,9 @@ export default function FullPageScroll({ pages, bgColors }: FullPageScrollProps)
     }
   };
 
+  const chevronCls =
+    'w-4 h-4 rounded-full flex items-center justify-center text-slate-400 hover:text-teal-700 hover:bg-teal-50 transition disabled:opacity-25 disabled:hover:bg-transparent disabled:hover:text-slate-400';
+
   // 所有设备统一整页翻屏；每页内部可独立滚动，内容再高也不会侵入相邻页
   return (
     <div
@@ -136,20 +151,46 @@ export default function FullPageScroll({ pages, bgColors }: FullPageScrollProps)
         ))}
       </div>
 
-      {/* Right Side Dot Indicators —— 半透明常驻，悬停时才完全显现 */}
-      <div className="fixed right-2.5 sm:right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-2.5 sm:gap-3 opacity-40 hover:opacity-100 transition-opacity duration-300">
+      {/* Right Side Dot Indicators —— 半透明常驻，悬停时才完全显现；首尾为上下翻页箭头（便于手机操作） */}
+      <div className="fixed right-2.5 sm:right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-2.5 sm:gap-3 opacity-40 hover:opacity-100 transition-opacity duration-300">
+        <button
+          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage === 0}
+          className={chevronCls}
+          aria-label="上一页 Previous"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M6 15l6-6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
         {pages.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToPage(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 border-2 ${
-              index === currentPage
-                ? 'bg-teal-600 border-teal-600 scale-125'
-                : 'bg-white/60 border-slate-400 hover:bg-slate-300 hover:border-slate-500'
-            }`}
-            aria-label={`跳转到第 ${index + 1} 页`}
-          />
+          <span key={index} className="group relative flex items-center">
+            {dotLabels?.[index] && (
+              <span className="pointer-events-none absolute right-full mr-2 whitespace-nowrap rounded bg-slate-800/90 px-2 py-0.5 text-[10px] font-medium text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                {dotLabels[index]}
+              </span>
+            )}
+            <button
+              onClick={() => goToPage(index)}
+              className={`w-3 h-3 rounded-full transition-all duration-300 border-2 ${
+                index === currentPage
+                  ? 'bg-teal-600 border-teal-600 scale-125'
+                  : 'bg-white/60 border-slate-400 hover:bg-slate-300 hover:border-slate-500'
+              }`}
+              aria-label={`跳转到第 ${index + 1} 页`}
+            />
+          </span>
         ))}
+        <button
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage === totalPages - 1}
+          className={chevronCls}
+          aria-label="下一页 Next"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
       </div>
     </div>
   );
