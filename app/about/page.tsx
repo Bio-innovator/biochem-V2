@@ -83,7 +83,8 @@ interface Honor {
   gradeEn: string;
   descZh: string;
   descEn: string;
-  link?: ActivityLink;
+  links?: ActivityLink[];
+  goto?: { page: number; labelZh: string; labelEn: string }; // 跳转到对应活动页
   wide?: boolean; // 宽行（占满整行）
 }
 
@@ -100,7 +101,7 @@ const honors: Honor[] = [
       'BBO 是全球规模最大的中学生生物赛事之一，每年吸引数万名选手参赛；全球金奖授予成绩位列前茅的选手。',
     descEn:
       'The BBO is one of the world\u2019s largest high-school biology competitions, drawing tens of thousands of contestants each year; Global Gold is its highest award tier.',
-    link: { kind: 'pdf', href: '/assets/bbo-cert', labelZh: '获奖证书', labelEn: 'Certificate' },
+    links: [{ kind: 'pdf', href: '/assets/bbo-cert', labelZh: '获奖证书', labelEn: 'Certificate' }],
   },
   {
     index: '02',
@@ -113,7 +114,7 @@ const honors: Honor[] = [
       'USABO 以全英文考核大学先修水平的生物学，覆盖从分子到生态的全部主线；全国银奖为国际赛道奖项。',
     descEn:
       'The USA Biology Olympiad tests college-level biology entirely in English, from molecules to ecosystems; the National Silver Award belongs to the international track.',
-    link: { kind: 'pdf', href: '/assets/usabo-cert', labelZh: '获奖证书', labelEn: 'Certificate' },
+    links: [{ kind: 'pdf', href: '/assets/usabo-cert', labelZh: '获奖证书', labelEn: 'Certificate' }],
   },
   {
     index: '03',
@@ -126,7 +127,12 @@ const honors: Honor[] = [
       '凭乳糖不耐受研究项目获 CTB Regional High Distinction（全国论坛华北区团队二等奖）——该奖项为国家级，属生命科学与健康赛道；论文以共同第一作者身份发表于期刊《进展》。',
     descEn:
       'CTB Regional High Distinction at the national forum — a national-level award in the Life Sciences & Health track — for our lactose-intolerance research, published in Advance as co-first author.',
-    link: { kind: 'pdf', href: '/assets/ctb-paper', labelZh: '发表论文', labelEn: 'Published paper' },
+    links: [
+      { kind: 'pdf', href: '/assets/ctb-paper', labelZh: '发表论文', labelEn: 'Published paper' },
+      { kind: 'pdf', href: '/assets/ctb-regional-award', labelZh: '获奖证书：Regional High Distinction', labelEn: 'Award certificate: Regional High Distinction' },
+      { kind: 'pdf', href: '/assets/ctb-completion', labelZh: '完赛证书（项目完成证明）', labelEn: 'Completion certificate' },
+    ],
+    goto: { page: 4, labelZh: '查看 CTB 活动详情页', labelEn: 'See the CTB experience page' },
   },
   {
     index: '04',
@@ -537,6 +543,9 @@ function HonorCard({ h }: { h: Honor }) {
   const { lang } = useLang();
   const zh = lang === 'zh';
   const lv = levelStyle[h.level];
+  const goTo = (pageIndex: number) => {
+    window.dispatchEvent(new CustomEvent('fps:goto', { detail: pageIndex }));
+  };
   return (
     <div
       className={`relative rounded-xl border border-slate-200 bg-white p-4 sm:p-5 text-left shadow-[0_1px_2px_rgba(15,23,42,0.04)] ${
@@ -558,16 +567,29 @@ function HonorCard({ h }: { h: Honor }) {
       <p className="mt-2 text-xs sm:text-[13px] leading-relaxed text-slate-600">
         {zh ? h.descZh : h.descEn}
       </p>
-      {h.link && (
-        <a
-          href={h.link.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-medium text-teal-700 underline underline-offset-4 hover:text-teal-800"
-        >
-          <IconDoc />
-          {zh ? h.link.labelZh : h.link.labelEn} ↗
-        </a>
+      {(h.links || h.goto) && (
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+          {h.links?.map((l) => (
+            <a
+              key={l.href}
+              href={l.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[11px] font-medium text-teal-700 underline underline-offset-4 hover:text-teal-800"
+            >
+              <IconDoc />
+              {zh ? l.labelZh : l.labelEn} ↗
+            </a>
+          ))}
+          {h.goto && (
+            <button
+              onClick={() => goTo(h.goto!.page)}
+              className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-500 underline underline-offset-4 hover:text-teal-700"
+            >
+              {zh ? h.goto.labelZh : h.goto.labelEn} ↓
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
