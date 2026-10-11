@@ -117,8 +117,9 @@ export default function FullPageScroll({ pages, bgColors, dotLabels }: FullPageS
     }
   };
 
+  // 加大尺寸 + 白底描边，箭头在任何背景下都清晰可见
   const chevronCls =
-    'w-4 h-4 rounded-full flex items-center justify-center text-slate-400 hover:text-teal-700 hover:bg-teal-50 transition disabled:opacity-25 disabled:hover:bg-transparent disabled:hover:text-slate-400';
+    'w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border border-slate-300 bg-white/80 shadow-sm text-slate-500 hover:text-teal-700 hover:border-teal-400 hover:bg-teal-50 transition disabled:opacity-25 disabled:hover:bg-white/80 disabled:hover:text-slate-500 disabled:hover:border-slate-300';
 
   // 所有设备统一整页翻屏；每页内部可独立滚动，内容再高也不会侵入相邻页
   return (
@@ -159,7 +160,7 @@ export default function FullPageScroll({ pages, bgColors, dotLabels }: FullPageS
           className={chevronCls}
           aria-label="上一页 Previous"
         >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path d="M6 15l6-6 6 6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
@@ -187,7 +188,7 @@ export default function FullPageScroll({ pages, bgColors, dotLabels }: FullPageS
           className={chevronCls}
           aria-label="下一页 Next"
         >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>

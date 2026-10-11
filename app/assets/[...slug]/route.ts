@@ -6,14 +6,15 @@ import sharp from 'sharp';
 export const runtime = 'nodejs';
 export const dynamic = 'force-static';
 
-// 「网站用图」/「图片补充」文件夹中的素材，以白名单 slug 对外提供
+// 「网站用图」/「图片补充」/「最新用图」文件夹中的素材，以白名单 slug 对外提供
 const DEFAULT_DIR = path.join(process.cwd(), '网站用图');
 const SUPPLEMENT_DIR = path.join(process.cwd(), '图片补充');
+const LATEST_DIR = path.join(process.cwd(), '最新用图');
 
 interface AssetEntry {
   file: string;
   kind: 'image' | 'pdf';
-  dir?: 'supplement'; // 默认从「网站用图」读取；supplement 则从「图片补充」读取
+  dir?: 'supplement' | 'latest'; // 默认从「网站用图」读取；supplement 从「图片补充」、latest 从「最新用图」读取
 }
 
 const ASSETS: Record<string, AssetEntry> = {
@@ -32,7 +33,6 @@ const ASSETS: Record<string, AssetEntry> = {
   'ucl-report':      { file: 'UCL project.pdf', kind: 'pdf' },
   'ctb-paper':       { file: 'CTB论文发表.pdf', kind: 'pdf' },
   'cis-paper':       { file: 'CIS论文.pdf', kind: 'pdf' },
-  'qinling-paper':   { file: '秦岭三官庙管护站人工林与次生林植物群落差异初步研究.pdf', kind: 'pdf' },
   'qinling-slides':  { file: '秦岭三官庙管护站人工林与次生林植物群落差异初步研究 PPT.pdf', kind: 'pdf' },
   // —— 以下为「图片补充」文件夹中的新增素材 ——
   'website-photo':      { file: '网站用图.jpg', kind: 'image', dir: 'supplement' },
@@ -43,6 +43,13 @@ const ASSETS: Record<string, AssetEntry> = {
   'site-improvements':  { file: '高三改进汇总.pdf', kind: 'pdf', dir: 'supplement' },
   'cis-transcript':     { file: 'CIS成绩单.pdf', kind: 'pdf', dir: 'supplement' },
   'cis-evaluation':     { file: 'CIS教授评价.pdf', kind: 'pdf', dir: 'supplement' },
+  // —— 以下为「最新用图」文件夹中的素材 ——
+  'qinling-paper':      { file: '秦岭三官庙管护站人工林与次生林植物群落差异初步研究.pdf', kind: 'pdf', dir: 'latest' }, // 论文最新版（旧版已舍弃）
+  'qinling-cert':       { file: '秦岭证书.pdf', kind: 'pdf', dir: 'latest' },
+  'bbo-cert':           { file: 'BBO.pdf', kind: 'pdf', dir: 'latest' },
+  'usabo-cert':         { file: 'USABO.pdf', kind: 'pdf', dir: 'latest' },
+  'eco-club-logo':      { file: '社团徽记.jpg', kind: 'image', dir: 'latest' },
+  'eco-article':        { file: '垃圾污染对人类健康的影响.pdf', kind: 'pdf', dir: 'latest' },
 };
 
 export async function GET(
@@ -55,7 +62,8 @@ export async function GET(
     return new NextResponse('Not found', { status: 404 });
   }
 
-  const baseDir = entry.dir === 'supplement' ? SUPPLEMENT_DIR : DEFAULT_DIR;
+  const baseDir =
+    entry.dir === 'supplement' ? SUPPLEMENT_DIR : entry.dir === 'latest' ? LATEST_DIR : DEFAULT_DIR;
   const filePath = path.join(baseDir, entry.file);
   if (!filePath.startsWith(baseDir)) {
     return new NextResponse('Forbidden', { status: 403 });

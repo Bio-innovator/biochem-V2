@@ -118,15 +118,16 @@ export default function Navbar() {
                 <Link
                   href="/dashboard"
                   title={zh ? '回到控制台' : 'Back to Dashboard'}
-                  className="hidden sm:flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded-md hover:bg-teal-50 transition-colors"
+                  className="hidden sm:flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded-md hover:bg-teal-50 transition-colors max-w-[11rem]"
                 >
-                  <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center text-xs">
+                  <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center text-xs shrink-0">
                     {user.displayName?.[0] || user.username[0]}
                   </div>
-                  <span className="text-xs text-slate-600">
+                  <span className="text-xs text-slate-600 whitespace-nowrap truncate min-w-0">
                     {user.displayName || user.username}
                   </span>
-                  <span className="text-[10px] px-1.5 py-0.5 bg-slate-200 rounded text-slate-500 capitalize">
+                  {/* 角色徽章仅宽屏显示，避免英文模式下挤压换行 */}
+                  <span className="hidden lg:inline-block whitespace-nowrap text-[10px] px-1.5 py-0.5 bg-slate-200 rounded text-slate-500 capitalize shrink-0">
                     {user.role}
                   </span>
                 </Link>
