@@ -4,10 +4,10 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthContext';
+import { useLang } from '@/components/LanguageContext';
 import { api } from '@/lib/api';
 import FullPageScroll from '@/components/FullPageScroll';
 import DnaHelix from '@/components/DnaHelix';
-import { LifeCalendarBanner } from '@/components/LifeCalendar';
 
 // 手绘线条图标（stroke 风格，随文字色变化）
 const iconProps = {
@@ -86,23 +86,55 @@ const IconPause = () => (
 );
 
 const features = [
-  { icon: IconBook, title: '知识点学习', titleEn: 'Knowledge', desc: '8 个单元共 53 个核心知识点，中英双语讲解', descEn: '53 core topics across 8 units, bilingual' },
-  { icon: IconChecklist, title: '小测平台', titleEn: 'Quiz', desc: '200+ 道精选题目，支持按单元筛选和限时模式', descEn: '200+ selected questions with filtering & timer' },
-  { icon: IconGlossary, title: '生物词典', titleEn: 'Glossary', desc: '200+ 专业词汇，音标、释义、例句齐全', descEn: '200+ professional terms with phonetics & examples' },
-  { icon: IconCompass, title: '专业探索', titleEn: 'Majors', desc: '本科及研究生生物相关专业介绍与课程规划', descEn: 'Undergraduate & graduate bio major guides' },
-  { icon: IconChart, title: '班级统计', titleEn: 'Classroom', desc: '班级概览、学生名单、薄弱知识点统计', descEn: 'Class overview, student list & weak spots' },
-  { icon: IconStopwatch, title: '题目测试', titleEn: 'AP Exam', desc: '生物题目、在线模考、成绩分析', descEn: 'Practice exams & performance analysis' },
+  {
+    icon: IconBook,
+    title: '知识点学习', titleEn: 'Knowledge',
+    desc: '8 个单元共 53 个核心知识点，中英双语讲解，附知识关联链与讲解视频',
+    descEn: '53 core topics across 8 units with knowledge chains and curated videos',
+  },
+  {
+    icon: IconChecklist,
+    title: '小测平台', titleEn: 'Quiz',
+    desc: '200+ 道精选题目，支持按单元筛选和限时模式',
+    descEn: '200+ selected questions with unit filters and a timed mode',
+  },
+  {
+    icon: IconGlossary,
+    title: '生物词典', titleEn: 'Glossary',
+    desc: '260+ 专业词汇，音标、释义、例句齐全',
+    descEn: '260+ professional terms with phonetics and examples',
+  },
+  {
+    icon: IconCompass,
+    title: '专业探索', titleEn: 'Majors',
+    desc: '本科及研究生生物相关专业介绍与课程规划',
+    descEn: 'Undergraduate & graduate bio major guides',
+  },
+  {
+    icon: IconChart,
+    title: '班级统计', titleEn: 'Classroom',
+    desc: '班级概览、学生名单、薄弱知识点统计',
+    descEn: 'Class overview, student list & weak-spot analytics',
+  },
+  {
+    icon: IconStopwatch,
+    title: '题目测试', titleEn: 'AP Exam',
+    desc: '生物题目、在线模考、成绩分析',
+    descEn: 'Practice exams & performance analysis',
+  },
 ];
 
 const heroStats = [
   { value: '8', zh: '单元', en: 'Units' },
   { value: '53', zh: '知识点', en: 'Topics' },
   { value: '200+', zh: '精选题目', en: 'Questions' },
-  { value: '200+', zh: '专业词汇', en: 'Terms' },
+  { value: '260+', zh: '专业词汇', en: 'Terms' },
 ];
 
 function HomeContent() {
   const { user, login } = useAuth();
+  const { lang } = useLang();
+  const zh = lang === 'zh';
   const searchParams = useSearchParams();
   const [showLogin, setShowLogin] = useState(false);
   const [form, setForm] = useState({ username: '', password: '' });
@@ -122,7 +154,7 @@ function HomeContent() {
       login(data.token, data.user);
       window.location.href = '/dashboard';
     } catch (e: any) {
-      setError(e.message || '登录失败 Login failed');
+      setError(e.message || (zh ? '登录失败' : 'Login failed'));
     } finally {
       setLoading(false);
     }
@@ -141,23 +173,19 @@ function HomeContent() {
             Biochem-niche
           </h1>
           <p className="text-lg sm:text-2xl text-teal-600 font-medium">
-            AP Biology 智能学习平台
+            {zh ? 'AP Biology 智能学习平台' : 'AP Biology Intelligent Learning Platform'}
           </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 mt-1 mb-4 sm:mb-6">AP Biology Intelligent Learning Platform</p>
           {user && (
-            <p className="text-teal-700 font-medium mb-2 text-sm sm:text-base">
-              欢迎回来，{user.displayName || user.username}！
-              <span className="block text-[11px] text-slate-400 mt-0.5 font-normal">
-                Welcome back, {user.displayName || user.username}!
-              </span>
+            <p className="text-teal-700 font-medium mt-3 text-sm sm:text-base">
+              {zh
+                ? `欢迎回来，${user.displayName || user.username}！`
+                : `Welcome back, ${user.displayName || user.username}!`}
             </p>
           )}
-          <p className="text-slate-500 mb-2 text-[13px] sm:text-base leading-relaxed">
-            专为 AP 生物学考试设计的学习管理系统，涵盖 8 个单元的知识点、自测题库、
-            生物词汇表和专业方向探索。支持学生和教师两种角色。
-          </p>
-          <p className="text-[11px] sm:text-xs text-slate-400 mb-5 sm:mb-8 leading-relaxed">
-            A learning management system designed for AP Biology exam preparation, covering 8 units of knowledge, self-test quizzes, biological vocabulary, and major exploration.
+          <p className="text-slate-500 mt-4 sm:mt-5 mb-5 sm:mb-8 text-[13px] sm:text-base leading-relaxed">
+            {zh
+              ? '专为 AP 生物学考试设计的学习管理系统，涵盖 8 个单元的知识点、自测题库、生物词汇表和专业方向探索。支持学生和教师两种角色。'
+              : 'A learning management system designed for AP Biology, covering 8 units of knowledge, self-test quizzes, a biological glossary, and major exploration — for both students and teachers.'}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             {user ? (
@@ -165,39 +193,35 @@ function HomeContent() {
                 href="/dashboard"
                 className="w-full sm:w-auto px-7 py-2.5 sm:py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-base sm:text-lg shadow-lg hover:shadow-xl"
               >
-                进入控制台
-                <span className="block text-xs sm:text-sm font-normal opacity-80 mt-0.5">Go to Dashboard</span>
+                {zh ? '进入控制台' : 'Go to Dashboard'}
               </Link>
             ) : (
               <button
                 onClick={() => { setShowLogin(true); setError(''); }}
                 className="w-full sm:w-auto px-7 py-2.5 sm:py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-base sm:text-lg shadow-lg hover:shadow-xl"
               >
-                登录
-                <span className="block text-xs sm:text-sm font-normal opacity-80 mt-0.5">Login</span>
+                {zh ? '登录' : 'Login'}
               </button>
             )}
             <Link
               href="/about"
               className="w-full sm:w-auto px-7 py-2.5 sm:py-3 bg-white/70 border border-slate-300 text-slate-700 rounded-lg hover:border-teal-600 hover:text-teal-700 transition font-medium text-base sm:text-lg"
             >
-              个人介绍
-              <span className="block text-xs sm:text-sm font-normal opacity-60 mt-0.5">Personal-intro</span>
+              {zh ? '个人介绍' : 'About Me'}
             </Link>
           </div>
           <div className="mt-5 pt-4 sm:mt-8 sm:pt-6 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-3">
             {heroStats.map((s) => (
               <div key={s.en}>
                 <div className="text-lg sm:text-xl font-bold text-slate-900">{s.value}</div>
-                <div className="text-xs text-slate-500">{s.zh}</div>
-                <div className="text-[10px] text-slate-400">{s.en}</div>
+                <div className="text-xs text-slate-500">{zh ? s.zh : s.en}</div>
               </div>
             ))}
           </div>
         </div>
         {/* 滚动提示 */}
         <div className="absolute bottom-4 sm:bottom-5 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-1 text-slate-400 pointer-events-none">
-          <span className="text-[10px] tracking-[0.3em]">下滑探索 · SCROLL</span>
+          <span className="text-[10px] tracking-[0.3em]">{zh ? '下滑探索 · SCROLL' : 'SCROLL TO EXPLORE'}</span>
           <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
             <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -208,39 +232,41 @@ function HomeContent() {
     // Page 2: Features —— 细分割线网格 + 手绘图标
     <div key="features" className="text-center max-w-6xl mx-auto w-full">
       <p className="text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-2">PLATFORM FEATURES</p>
-      <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">平台功能</h2>
-      <p className="text-xs sm:text-sm text-slate-400 mb-6 sm:mb-10">六大模块，覆盖 AP 生物备考全流程</p>
+      <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">{zh ? '平台功能' : 'Platform Features'}</h2>
+      <p className="text-xs sm:text-sm text-slate-400 mb-6 sm:mb-10">
+        {zh ? '六大模块，覆盖 AP 生物备考全流程' : 'Six modules covering your full AP Biology prep'}
+      </p>
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-slate-200 border border-slate-200 rounded-xl overflow-hidden text-left">
         {features.map((f, i) => (
           <div key={i} className="bg-white p-3.5 sm:p-6 transition-colors hover:bg-teal-50/40">
             <div className="mb-2 sm:mb-4">
               <f.icon />
             </div>
-            <h3 className="font-semibold text-slate-900 mb-0.5 text-sm sm:text-lg">
-              {f.title}
-              <span className="text-[10px] sm:text-xs text-slate-400 font-normal ml-2">{f.titleEn}</span>
+            <h3 className="font-semibold text-slate-900 mb-1 text-sm sm:text-lg">
+              {zh ? f.title : f.titleEn}
             </h3>
-            <p className="text-[11px] sm:text-sm text-slate-500 leading-snug sm:leading-relaxed mb-1">{f.desc}</p>
-            <p className="text-[10px] sm:text-xs text-slate-400 leading-snug sm:leading-relaxed">{f.descEn}</p>
+            <p className="text-[11px] sm:text-sm text-slate-500 leading-snug sm:leading-relaxed">
+              {zh ? f.desc : f.descEn}
+            </p>
           </div>
         ))}
       </div>
     </div>,
 
-    // Page 3: Notice —— 注册暂停致歉公告（替代原单元预览）
+    // Page 3: Notice —— 注册暂停致歉公告
     <div key="notice" className="text-center max-w-2xl mx-auto w-full">
       <div className="flex justify-center mb-6">
         <IconPause />
       </div>
-      <p className="text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-2">NOTICE · 公告</p>
-      <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">注册通道暂时关闭</h2>
-      <p className="text-xs sm:text-sm text-slate-400 mb-6 sm:mb-10">Registration Temporarily Closed</p>
+      <p className="text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-2">{zh ? 'NOTICE · 公告' : 'NOTICE'}</p>
+      <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-6 sm:mb-10">
+        {zh ? '注册通道暂时关闭' : 'Registration Temporarily Closed'}
+      </h2>
       <div className="bg-white border border-slate-200 rounded-xl px-5 py-6 sm:px-10 sm:py-8 text-left shadow-sm">
-        <p className="text-slate-600 text-[13px] sm:text-[15px] leading-relaxed sm:leading-loose mb-4">
-          非常抱歉，Biochem-niche 目前已关闭新用户注册通道。现阶段平台仅服务于北京师范大学附属中学社区的师生；待平台运营与承载能力进一步稳定后，我们会视情况恢复开放注册。感谢你的理解与关注。
-        </p>
-        <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed">
-          We&apos;re sorry — registration for new users is temporarily closed. Biochem-niche currently serves only the community of the High School Affiliated to Beijing Normal University. Registration may reopen once the platform&apos;s capacity allows. Thank you for your understanding and interest.
+        <p className="text-slate-600 text-[13px] sm:text-[15px] leading-relaxed sm:leading-loose">
+          {zh
+            ? '非常抱歉，Biochem-niche 目前已关闭新用户注册通道。现阶段平台仅服务于北京师范大学附属中学社区的师生；待平台运营与承载能力进一步稳定后，我们会视情况恢复开放注册。感谢你的理解与关注。'
+            : "We're sorry — registration for new users is temporarily closed. Biochem-niche currently serves only the community of the High School Affiliated to Beijing Normal University. Registration may reopen once the platform's capacity allows. Thank you for your understanding and interest."}
         </p>
       </div>
     </div>,
@@ -251,27 +277,26 @@ function HomeContent() {
         <IconSprout />
       </div>
       <p className="text-[11px] tracking-[0.28em] text-teal-700 font-medium mb-2">START YOUR JOURNEY</p>
-      <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">开始你的 AP 生物学习之旅</h2>
-      <p className="text-xs sm:text-sm text-slate-400 mb-4 sm:mb-6">Start Your AP Biology Journey</p>
+      <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 sm:mb-6">
+        {zh ? '开始你的 AP 生物学习之旅' : 'Start Your AP Biology Journey'}
+      </h2>
       {user ? (
         <Link
           href="/dashboard"
           className="inline-block px-7 py-2.5 sm:py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-base sm:text-lg shadow-lg"
         >
-          进入控制台
-          <span className="block text-xs sm:text-sm font-normal opacity-80 mt-0.5">Go to Dashboard</span>
+          {zh ? '进入控制台' : 'Go to Dashboard'}
         </Link>
       ) : (
         <button
           onClick={() => { setShowLogin(true); setError(''); }}
           className="px-7 py-2.5 sm:py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-base sm:text-lg shadow-lg"
         >
-          立即登录
-          <span className="block text-xs sm:text-sm font-normal opacity-80 mt-0.5">Login Now</span>
+          {zh ? '立即登录' : 'Login Now'}
         </button>
       )}
       <p className="mt-8 sm:mt-10 text-xs text-slate-400 tracking-wide">
-        Biochem-niche v2.2 — AP Biology Learning Platform
+        Biochem-niche v2.3 — AP Biology Learning Platform
       </p>
     </div>,
   ];
@@ -281,17 +306,13 @@ function HomeContent() {
   return (
     <>
       <FullPageScroll pages={pages} bgColors={bgColors} />
-      <LifeCalendarBanner />
 
       {/* Login Modal */}
       {showLogin && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-4">
-              <div className="flex items-baseline gap-2">
-                <h2 className="text-xl font-bold text-slate-900">登录</h2>
-                <span className="text-xs text-slate-400">Login</span>
-              </div>
+              <h2 className="text-xl font-bold text-slate-900">{zh ? '登录' : 'Login'}</h2>
               <button onClick={() => setShowLogin(false)} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
 
@@ -299,29 +320,27 @@ function HomeContent() {
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  用户名
-                  <span className="text-xs text-slate-400 ml-2">Username</span>
+                  {zh ? '用户名' : 'Username'}
                 </label>
                 <input
                   type="text"
                   value={form.username}
                   onChange={(e) => setForm({ ...form, username: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="请输入用户名 / Enter username"
+                  placeholder={zh ? '请输入用户名' : 'Enter username'}
                   required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  密码
-                  <span className="text-xs text-slate-400 ml-2">Password</span>
+                  {zh ? '密码' : 'Password'}
                 </label>
                 <input
                   type="password"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="请输入密码 / Enter password"
+                  placeholder={zh ? '请输入密码' : 'Enter password'}
                   required
                 />
               </div>
@@ -330,7 +349,7 @@ function HomeContent() {
                 disabled={loading}
                 className="w-full py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition disabled:opacity-50 font-medium"
               >
-                {loading ? '登录中... Logging in...' : '登录 Login'}
+                {loading ? (zh ? '登录中...' : 'Logging in...') : zh ? '登录' : 'Login'}
               </button>
             </form>
           </div>
@@ -342,7 +361,7 @@ function HomeContent() {
 
 export default function Home() {
   return (
-    <Suspense fallback={<div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">加载中... Loading...</div>}>
+    <Suspense fallback={<div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">Loading...</div>}>
       <HomeContent />
     </Suspense>
   );

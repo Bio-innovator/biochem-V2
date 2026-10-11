@@ -2,12 +2,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth, useRole } from './AuthContext';
+import { useLang } from './LanguageContext';
 
 const navItems = {
   public: [
-    { href: '/', label: '首页', labelEn: 'First-page' },
-    { href: '/story', label: '网站故事', labelEn: 'Website-story' },
-    { href: '/about', label: '个人介绍', labelEn: 'Personal-intro' },
+    { href: '/', label: '首页', labelEn: 'Home' },
+    { href: '/story', label: '网站故事', labelEn: 'Our Story' },
+    { href: '/about', label: '个人介绍', labelEn: 'About Me' },
     { href: '/feedback', label: '建议反馈', labelEn: 'Feedback' },
   ],
   student: [
@@ -41,6 +42,8 @@ export default function Navbar() {
   const { user, logout, isLoading } = useAuth();
   const role = useRole();
   const pathname = usePathname();
+  const { lang, toggleLang } = useLang();
+  const zh = lang === 'zh';
 
   let items: typeof navItems.public = [];
   if (user && PUBLIC_PATHS.includes(pathname ?? '')) {
@@ -72,7 +75,7 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Nav Links —— 中文在上（黑色、较大），英文在下（灰色、较小） */}
+          {/* Nav Links —— 按当前语言显示单一文字 */}
           {items.length > 0 ? (
             <div className="justify-self-center flex items-center gap-0.5 sm:gap-2 overflow-x-auto max-w-full">
               {items.map((item) => {
@@ -81,20 +84,14 @@ export default function Navbar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`group px-2.5 sm:px-3.5 py-1 rounded-md text-center whitespace-nowrap transition-colors
+                    className={`px-2.5 sm:px-3.5 py-1.5 rounded-md text-center whitespace-nowrap transition-colors
                       ${active ? 'bg-teal-50' : 'hover:bg-slate-50'}`}
                   >
                     <span
                       className={`block text-[13px] sm:text-sm font-semibold leading-tight transition-colors
                         ${active ? 'text-teal-700' : 'text-slate-900'}`}
                     >
-                      {item.label}
-                    </span>
-                    <span
-                      className={`block text-[9px] sm:text-[10px] leading-tight tracking-wide mt-0.5 transition-colors
-                        ${active ? 'text-teal-600/70' : 'text-slate-400'}`}
-                    >
-                      {item.labelEn}
+                      {zh ? item.label : item.labelEn}
                     </span>
                   </Link>
                 );
@@ -106,13 +103,21 @@ export default function Navbar() {
 
           {/* Auth Section */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 justify-self-end">
+            {/* 语言切换 */}
+            <button
+              onClick={toggleLang}
+              title={zh ? 'Switch to English' : '切换到中文'}
+              className="px-2 py-1 rounded-md border border-slate-200 text-xs font-semibold text-slate-600 hover:border-teal-500 hover:text-teal-700 transition-colors"
+            >
+              {zh ? 'EN' : '中'}
+            </button>
             {isLoading ? (
               <div className="w-16 h-6 bg-slate-100 rounded animate-pulse" />
             ) : user ? (
               <div className="flex items-center gap-2 sm:gap-3">
                 <Link
                   href="/dashboard"
-                  title="回到控制台 / Back to Dashboard"
+                  title={zh ? '回到控制台' : 'Back to Dashboard'}
                   className="hidden sm:flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded-md hover:bg-teal-50 transition-colors"
                 >
                   <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center text-xs">
@@ -127,26 +132,20 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={logout}
-                  className="group px-2 py-1 rounded-md text-center hover:bg-slate-50 transition-colors"
+                  className="px-2 py-1.5 rounded-md text-center hover:bg-slate-50 transition-colors"
                 >
-                  <span className="block text-[13px] sm:text-sm font-semibold leading-tight text-slate-500 group-hover:text-red-600 transition-colors">
-                    退出
-                  </span>
-                  <span className="block text-[9px] sm:text-[10px] leading-tight tracking-wide mt-0.5 text-slate-400">
-                    Logout
+                  <span className="block text-[13px] sm:text-sm font-semibold leading-tight text-slate-500 hover:text-red-600 transition-colors">
+                    {zh ? '退出' : 'Logout'}
                   </span>
                 </button>
               </div>
             ) : (
               <Link
                 href="/?login=1"
-                className="group px-2.5 sm:px-3.5 py-1 rounded-md text-center hover:bg-teal-50 transition-colors"
+                className="px-2.5 sm:px-3.5 py-1.5 rounded-md text-center hover:bg-teal-50 transition-colors"
               >
                 <span className="block text-[13px] sm:text-sm font-semibold leading-tight text-teal-700">
-                  登录
-                </span>
-                <span className="block text-[9px] sm:text-[10px] leading-tight tracking-wide mt-0.5 text-teal-600/60">
-                  Login
+                  {zh ? '登录' : 'Login'}
                 </span>
               </Link>
             )}
