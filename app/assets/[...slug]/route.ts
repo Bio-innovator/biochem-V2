@@ -10,11 +10,12 @@ export const dynamic = 'force-static';
 const DEFAULT_DIR = path.join(process.cwd(), '网站用图');
 const SUPPLEMENT_DIR = path.join(process.cwd(), '图片补充');
 const LATEST_DIR = path.join(process.cwd(), '最新用图');
+const FINAL_DIR = path.join(process.cwd(), '最终的附加信息');
 
 interface AssetEntry {
   file: string;
   kind: 'image' | 'pdf';
-  dir?: 'supplement' | 'latest'; // 默认从「网站用图」读取；supplement 从「图片补充」、latest 从「最新用图」读取
+  dir?: 'supplement' | 'latest' | 'final'; // 默认从「网站用图」读取；supplement 从「图片补充」、latest 从「最新用图」、final 从「最终的附加信息」读取
 }
 
 const ASSETS: Record<string, AssetEntry> = {
@@ -50,6 +51,9 @@ const ASSETS: Record<string, AssetEntry> = {
   'usabo-cert':         { file: 'USABO.pdf', kind: 'pdf', dir: 'latest' },
   'eco-club-logo':      { file: '社团徽记.jpg', kind: 'image', dir: 'latest' },
   'eco-article':        { file: '垃圾污染对人类健康的影响.pdf', kind: 'pdf', dir: 'latest' },
+  // —— 以下为「最终的附加信息」文件夹中的素材 ——
+  'ctb-regional-award':   { file: 'CTB REGIONAL HIGH DISTINCTION.pdf', kind: 'pdf', dir: 'final' },
+  'ctb-completion':       { file: 'CTB completion.pdf', kind: 'pdf', dir: 'final' },
 };
 
 export async function GET(
@@ -63,7 +67,13 @@ export async function GET(
   }
 
   const baseDir =
-    entry.dir === 'supplement' ? SUPPLEMENT_DIR : entry.dir === 'latest' ? LATEST_DIR : DEFAULT_DIR;
+    entry.dir === 'supplement'
+      ? SUPPLEMENT_DIR
+      : entry.dir === 'latest'
+      ? LATEST_DIR
+      : entry.dir === 'final'
+      ? FINAL_DIR
+      : DEFAULT_DIR;
   const filePath = path.join(baseDir, entry.file);
   if (!filePath.startsWith(baseDir)) {
     return new NextResponse('Forbidden', { status: 403 });
