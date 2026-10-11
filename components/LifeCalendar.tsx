@@ -1,300 +1,286 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { LIFE_CALENDAR, LIFE_EVENT_STYLE, LifeEvent, LifeEventType } from '@/data/lifeCalendar';
+import { useEffect, useMemo, useState } from 'react'
+import { useLang } from '@/components/LanguageContext'
+import { LIFE_CALENDAR, LIFE_EVENT_STYLE, LifeEvent, LifeEventType } from '@/data/lifeCalendar'
 
-const POPUP_OFF_KEY = 'lifeCalendarPopupOff';
-const DISMISS_KEY = 'lifeCalendarDismissedDate';
+const POPUP_OFF_KEY = 'lifeCalendarPopupOff'
+const DISMISS_KEY = 'lifeCalendarDismissedDate'
 
-const WEEKDAYS = [
-  { zh: '日', en: 'Sun' },
-  { zh: '一', en: 'Mon' },
-  { zh: '二', en: 'Tue' },
-  { zh: '三', en: 'Wed' },
-  { zh: '四', en: 'Thu' },
-  { zh: '五', en: 'Fri' },
-  { zh: '六', en: 'Sat' },
-];
+const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
-const MONTH_NAMES = [
-  '一月', '二月', '三月', '四月', '五月', '六月',
-  '七月', '八月', '九月', '十月', '十一月', '十二月',
-];
-
-function todayKey(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+function todayStr() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-function todayEvent(): LifeEvent | null {
-  const now = new Date();
-  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  return LIFE_CALENDAR[monthKey]?.[now.getDate()] ?? null;
+function monthKey(year: number, month: number) {
+  return `${year}-${String(month + 1).padStart(2, '0')}`
 }
 
-function isPopupOff(): boolean {
-  try {
-    return localStorage.getItem(POPUP_OFF_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
+/* ================= 日历主体 ================= */
 
-function EventDetail({ event }: { event: LifeEvent }) {
-  const style = LIFE_EVENT_STYLE[event.type];
-  return (
-    <div>
-      <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${style.badge}`}>
-        {style.labelZh} · {style.labelEn}
-      </span>
-      <h3 className="font-semibold text-slate-900 mt-2">{event.titleZh}</h3>
-      <p className="text-xs text-slate-400">{event.titleEn}</p>
-      <p className="text-sm text-slate-700 leading-relaxed mt-2">{event.contentZh}</p>
-      <p className="text-xs text-slate-500 leading-relaxed mt-1">{event.contentEn}</p>
-    </div>
-  );
-}
-
-/** 主日历卡片：只显示本月，不可翻页（紧凑版） */
 export default function LifeCalendar() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth(); // 0-based
-  const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
-  const monthEvents = LIFE_CALENDAR[monthKey] ?? {};
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const firstWeekday = new Date(year, month, 1).getDay();
-  const today = now.getDate();
+  const { lang } = useLang()
+  const zh = lang === 'zh'
+  const now = new Date()
+  const [viewYear, setViewYear] = useState(now.getFullYear())
+  const [viewMonth, setViewMonth] = useState(now.getMonth())
+  const [selected, setSelected] = useState<{ day: number; event: LifeEvent } | null>(null)
 
-  const [selected, setSelected] = useState<number>(today);
-  const [popupEnabled, setPopupEnabled] = useState(true);
+  const key = monthKey(viewYear, viewMonth)
+  const monthEvents = LIFE_CALENDAR[key] ?? {}
 
-  useEffect(() => {
-    setPopupEnabled(!isPopupOff());
-  }, []);
+  const days = useMemo(() => {
+    const first = new Date(viewYear, viewMonth, 1)
+    const startWeekday = (first.getDay() + 6) % 7 // 周一起
+    const count = new Date(viewYear, viewMonth + 1, 0).getDate()
+    return { startWeekday, count }
+  }, [viewYear, viewMonth])
 
-  function togglePopup() {
-    const next = !popupEnabled;
-    setPopupEnabled(next);
-    try {
-      if (next) {
-        localStorage.removeItem(POPUP_OFF_KEY);
-      } else {
-        localStorage.setItem(POPUP_OFF_KEY, '1');
-      }
-    } catch {}
+  const shiftMonth = (delta: number) => {
+    const d = new Date(viewYear, viewMonth + delta, 1)
+    setViewYear(d.getFullYear())
+    setViewMonth(d.getMonth())
+    setSelected(null)
   }
 
-  const cells: (number | null)[] = [
-    ...Array<null>(firstWeekday).fill(null),
-    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
-  ];
-
-  const selectedEvent = monthEvents[selected];
+  const isToday = (day: number) =>
+    day === now.getDate() && viewMonth === now.getMonth() && viewYear === now.getFullYear()
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5">
-      <div className="flex items-start justify-between gap-3 mb-3">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <div className="mb-1 flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-base font-bold text-slate-900">
-            生命教育日历 · Life Education Calendar
-          </h2>
-          <p className="text-xs text-slate-500">
-            {year} 年 {MONTH_NAMES[month]} · {MONTH_NAMES[month]} {year}（仅显示本月 · Current month only）
+          <h3 className="text-base font-bold text-slate-900">{zh ? '生命日历' : 'Life Calendar'}</h3>
+          <p className="mt-0.5 text-xs text-slate-500">
+            {zh ? '点击带标记的日期，查看每日疾病防治、生命伦理与纪念科普' : 'Tap a marked day for a daily note on health, bioethics, and remembrance.'}
           </p>
         </div>
-        <button
-          onClick={togglePopup}
-          className={`shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium transition ${
-            popupEnabled
-              ? 'bg-teal-50 text-teal-700 hover:bg-teal-100'
-              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-          }`}
-        >
-          {popupEnabled ? '每日弹窗：开 · Popup: On' : '每日弹窗：关 · Popup: Off'}
-        </button>
-      </div>
-
-      {/* 限制日历网格宽度，保持格子紧凑 */}
-      <div className="max-w-sm mx-auto">
-        <div className="grid grid-cols-7 gap-0.5 mb-0.5">
-          {WEEKDAYS.map((d) => (
-            <div key={d.en} className="text-center text-[10px] font-medium text-slate-400 py-0.5">
-              {d.zh} {d.en}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-0.5">
-          {cells.map((day, i) => {
-            if (day === null) return <div key={`e-${i}`} />;
-            const event = monthEvents[day];
-            const isToday = day === today;
-            const isSelected = day === selected;
-            return (
-              <button
-                key={day}
-                onClick={() => setSelected(day)}
-                className={`relative aspect-square rounded-md text-xs flex flex-col items-center justify-center gap-0.5 transition ${
-                  isSelected
-                    ? 'bg-teal-600 text-white'
-                    : isToday
-                    ? 'bg-teal-50 text-teal-700 font-semibold'
-                    : event
-                    ? 'bg-slate-50 text-slate-700 hover:bg-slate-100'
-                    : 'text-slate-400 hover:bg-slate-50'
-                }`}
-              >
-                {day}
-                {event && (
-                  <span
-                    className={`w-1 h-1 rounded-full ${
-                      isSelected ? 'bg-white' : LIFE_EVENT_STYLE[event.type].dot
-                    }`}
-                  />
-                )}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-1.5">
+          <button onClick={() => shiftMonth(-1)} aria-label={zh ? '上一月' : 'Previous month'}
+            className="flex h-7 w-7 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100">
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+          </button>
+          <span className="min-w-[4.5rem] text-center text-sm font-semibold text-slate-700">
+            {zh ? `${viewYear} 年 ${viewMonth + 1} 月` : `${MONTHS_EN[viewMonth]} ${viewYear}`}
+          </span>
+          <button onClick={() => shiftMonth(1)} aria-label={zh ? '下一月' : 'Next month'}
+            className="flex h-7 w-7 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100">
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+          </button>
         </div>
       </div>
 
-      <div className="flex flex-wrap justify-center gap-3 mt-3 text-[10px] text-slate-500">
+      {/* 图例 */}
+      <div className="mb-2 flex flex-wrap gap-x-3 gap-y-1">
         {(Object.keys(LIFE_EVENT_STYLE) as LifeEventType[]).map((t) => (
-          <span key={t} className="flex items-center gap-1">
-            <span className={`w-2 h-2 rounded-full ${LIFE_EVENT_STYLE[t].dot}`} />
-            {LIFE_EVENT_STYLE[t].labelZh} {LIFE_EVENT_STYLE[t].labelEn}
+          <span key={t} className="flex items-center gap-1 text-[10px] text-slate-500">
+            <span className={`inline-block h-1.5 w-1.5 rounded-full ${LIFE_EVENT_STYLE[t].dot}`} />
+            {zh ? LIFE_EVENT_STYLE[t].labelZh : LIFE_EVENT_STYLE[t].labelEn}
           </span>
         ))}
       </div>
 
-      {selectedEvent && (
-        <div className="mt-3 bg-slate-50 rounded-lg p-4 max-w-2xl mx-auto">
-          <EventDetail event={selectedEvent} />
+      <div className="mx-auto max-w-sm">
+        <div className="grid grid-cols-7 gap-0.5 text-center text-[10px] font-medium text-slate-400">
+          {(zh ? ['一', '二', '三', '四', '五', '六', '日'] : ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']).map((w) => (
+            <div key={w} className="py-0.5">{w}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-0.5">
+          {Array.from({ length: days.startWeekday }).map((_, i) => (
+            <div key={`blank-${i}`} />
+          ))}
+          {Array.from({ length: days.count }).map((_, i) => {
+            const day = i + 1
+            const ev = monthEvents[day]
+            const active = selected?.day === day
+            return (
+              <button
+                key={day}
+                disabled={!ev}
+                onClick={() => ev && setSelected({ day, event: ev })}
+                className={`relative flex aspect-square flex-col items-center justify-center rounded-md text-xs transition ${
+                  active
+                    ? 'bg-teal-600 font-bold text-white'
+                    : ev
+                      ? 'font-medium text-slate-800 hover:bg-teal-50'
+                      : 'cursor-default text-slate-400'
+                } ${isToday(day) && !active ? 'ring-1 ring-teal-500' : ''}`}
+              >
+                {day}
+                {ev && !active && <span className={`absolute bottom-0.5 h-1 w-1 rounded-full ${LIFE_EVENT_STYLE[ev.type].dot}`} />}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* 事件详情 */}
+      {selected && (
+        <div className="mt-3 rounded-xl border border-teal-100 bg-teal-50/60 p-3">
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+              selected.event.type === 'disease'
+                ? 'bg-rose-100 text-rose-700'
+                : selected.event.type === 'ethics'
+                  ? 'bg-violet-100 text-violet-700'
+                  : 'bg-amber-100 text-amber-700'
+            }`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${LIFE_EVENT_STYLE[selected.event.type].dot}`} />
+              {zh ? LIFE_EVENT_STYLE[selected.event.type].labelZh : LIFE_EVENT_STYLE[selected.event.type].labelEn}
+            </span>
+            <button onClick={() => setSelected(null)} aria-label={zh ? '关闭' : 'Close'} className="text-slate-400 transition hover:text-slate-600">
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+            </button>
+          </div>
+          <div className="text-sm font-bold text-slate-900">
+            {zh ? `${viewMonth + 1} 月 ${selected.day} 日 · ` : `${MONTHS_EN[viewMonth]} ${selected.day} · `}
+            {zh ? selected.event.nameZh : selected.event.nameEn}
+          </div>
+          <p className="mt-1 text-xs leading-relaxed text-slate-600">
+            {zh ? selected.event.detailZh : selected.event.detailEn}
+          </p>
         </div>
       )}
     </div>
-  );
+  )
 }
 
-/** 进入 dashboard 时的每日弹窗 */
-export function LifeCalendarPopup() {
-  const [visible, setVisible] = useState(false);
-  const [event, setEvent] = useState<LifeEvent | null>(null);
+/* ================= 登录后弹窗（每次登录弹出，可选今日不再弹出） ================= */
+
+export function LifeCalendarPopup({ onOpenCalendar }: { onOpenCalendar?: () => void }) {
+  const { lang } = useLang()
+  const zh = lang === 'zh'
+  const [visible, setVisible] = useState(false)
+  const [dontShowToday, setDontShowToday] = useState(false)
+  const now = new Date()
+  const ev = LIFE_CALENDAR[monthKey(now.getFullYear(), now.getMonth())]?.[now.getDate()]
 
   useEffect(() => {
-    try {
-      if (isPopupOff()) return;
-      if (localStorage.getItem(DISMISS_KEY) === todayKey()) return;
-      const ev = todayEvent();
-      if (!ev) return;
-      setEvent(ev);
-      setVisible(true);
-    } catch {}
-  }, []);
+    if (typeof window === 'undefined') return
+    if (localStorage.getItem(POPUP_OFF_KEY) === '1') return
+    if (localStorage.getItem(DISMISS_KEY) === todayStr()) return
+    setVisible(true)
+  }, [])
 
-  if (!visible || !event) return null;
+  if (!visible || !ev) return null
 
-  function dismissToday() {
-    try {
-      localStorage.setItem(DISMISS_KEY, todayKey());
-    } catch {}
-    setVisible(false);
+  const close = () => {
+    if (dontShowToday) localStorage.setItem(DISMISS_KEY, todayStr())
+    setVisible(false)
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative">
-        <button
-          onClick={() => setVisible(false)}
-          className="absolute top-3 right-3 text-slate-400 hover:text-slate-600 text-lg leading-none"
-          aria-label="Close"
-        >
-          ✕
-        </button>
-        <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-2">
-          今日生命教育 · Today&apos;s Life Education
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm" onClick={close}>
+      <div
+        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+        style={{ animation: 'lifePopupIn 0.3s ease-out' }}
+      >
+        <style>{`@keyframes lifePopupIn { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }`}</style>
+        <div className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-teal-600">
+          {zh ? '今日生命教育' : 'TODAY\u2019S LIFE EDUCATION'}
+        </div>
+        <div className="text-lg font-bold text-slate-900">
+          {zh ? ev.nameZh : ev.nameEn}
+        </div>
+        <div className="mt-0.5 text-xs text-slate-400">
+          {zh ? `${now.getFullYear()} 年 ${now.getMonth() + 1} 月 ${now.getDate()} 日` : `${MONTHS_EN[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`}
+        </div>
+        <p className="mt-3 text-sm leading-relaxed text-slate-600">
+          {zh ? ev.detailZh : ev.detailEn}
         </p>
-        <EventDetail event={event} />
-        <button
-          onClick={dismissToday}
-          className="mt-5 w-full py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium transition"
-        >
-          今日不再弹出 · Don&apos;t show again today
-        </button>
+        <div className="mt-5 flex items-center justify-between gap-3">
+          <label className="flex cursor-pointer items-center gap-1.5 text-xs text-slate-500">
+            <input
+              type="checkbox"
+              checked={dontShowToday}
+              onChange={(e) => setDontShowToday(e.target.checked)}
+              className="h-3.5 w-3.5 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+            />
+            {zh ? '今日不再弹出' : 'Don\u2019t show again today'}
+          </label>
+          <div className="flex gap-2">
+            {onOpenCalendar && (
+              <button
+                onClick={() => { close(); onOpenCalendar() }}
+                className="rounded-lg border border-teal-200 px-3 py-1.5 text-xs font-medium text-teal-700 transition hover:bg-teal-50"
+              >
+                {zh ? '查看日历' : 'Open calendar'}
+              </button>
+            )}
+            <button
+              onClick={close}
+              className="rounded-lg bg-teal-600 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-teal-700"
+            >
+              {zh ? '知道了' : 'Got it'}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-  );
+  )
 }
 
-/** 首页顶部横幅：仅展示今日条目名称，20 秒自动消失，可勾选今日不再弹出 */
+/* ================= 顶部横幅（保留导出，目前未使用） ================= */
+
 export function LifeCalendarBanner() {
-  const [visible, setVisible] = useState(false);
-  const [event, setEvent] = useState<LifeEvent | null>(null);
-  const [dontShow, setDontShow] = useState(false);
+  const { lang } = useLang()
+  const zh = lang === 'zh'
+  const [visible, setVisible] = useState(false)
+  const [dontShowToday, setDontShowToday] = useState(false)
+  const now = new Date()
+  const ev = LIFE_CALENDAR[monthKey(now.getFullYear(), now.getMonth())]?.[now.getDate()]
 
   useEffect(() => {
-    try {
-      if (isPopupOff()) return;
-      if (localStorage.getItem(DISMISS_KEY) === todayKey()) return;
-      const ev = todayEvent();
-      if (!ev) return;
-      setEvent(ev);
-      setVisible(true);
-    } catch {}
-  }, []);
+    if (typeof window === 'undefined') return
+    if (localStorage.getItem(POPUP_OFF_KEY) === '1') return
+    if (localStorage.getItem(DISMISS_KEY) === todayStr()) return
+    setVisible(true)
+    const timer = setTimeout(() => setVisible(false), 20000)
+    return () => clearTimeout(timer)
+  }, [])
 
-  // 20 秒无人操作自动消失
-  useEffect(() => {
-    if (!visible) return;
-    const timer = window.setTimeout(() => setVisible(false), 20000);
-    return () => window.clearTimeout(timer);
-  }, [visible]);
+  if (!visible || !ev) return null
 
-  if (!visible || !event) return null;
-
-  function toggleDontShow(checked: boolean) {
-    setDontShow(checked);
-    try {
-      if (checked) {
-        localStorage.setItem(DISMISS_KEY, todayKey());
-      } else {
-        localStorage.removeItem(DISMISS_KEY);
-      }
-    } catch {}
+  const close = () => {
+    if (dontShowToday) localStorage.setItem(DISMISS_KEY, todayStr())
+    setVisible(false)
   }
 
   return (
     <div
-      className="fixed top-20 left-1/2 z-40 w-[calc(100%-2rem)] max-w-md"
+      className="fixed left-1/2 top-20 z-[60] w-[calc(100%-2rem)] max-w-md rounded-2xl border border-teal-100 bg-white/95 p-4 shadow-xl backdrop-blur"
       style={{ animation: 'lifeBannerIn 0.35s ease-out', transform: 'translateX(-50%)' }}
     >
-      <style>{`@keyframes lifeBannerIn { from { opacity: 0; transform: translate(-50%, -16px); } to { opacity: 1; transform: translate(-50%, 0); } }`}</style>
-      <div className="bg-white/95 backdrop-blur rounded-xl shadow-lg border border-slate-200 px-4 pt-2.5 pb-1">
-        <div className="flex items-center gap-2.5">
-          <span className={`w-2 h-2 rounded-full shrink-0 ${LIFE_EVENT_STYLE[event.type].dot}`} />
-          <p className="flex-1 min-w-0 text-sm font-medium text-slate-900 truncate">
-            {event.titleZh} · {event.titleEn}
-          </p>
-          <button
-            onClick={() => setVisible(false)}
-            className="shrink-0 text-slate-400 hover:text-slate-600 leading-none"
-            aria-label="Close"
-          >
-            ✕
-          </button>
+      <style>{`@keyframes lifeBannerIn { from { opacity: 0; transform: translate(-50%, -12px); } to { opacity: 1; transform: translate(-50%, 0); } }`}</style>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-widest text-teal-600">
+            {zh ? '今日生命教育' : 'TODAY\u2019S LIFE EDUCATION'}
+          </div>
+          <div className="mt-0.5 text-sm font-bold text-slate-900">{zh ? ev.nameZh : ev.nameEn}</div>
         </div>
-        <label className="flex items-center justify-center gap-1.5 mt-1 pb-0.5 cursor-pointer select-none">
+        <button onClick={close} aria-label={zh ? '关闭' : 'Close'} className="text-slate-400 transition hover:text-slate-600">
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+        </button>
+      </div>
+      <div className="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2">
+        <label className="flex cursor-pointer items-center gap-1.5 text-[11px] text-slate-400">
           <input
             type="checkbox"
-            checked={dontShow}
-            onChange={(e) => toggleDontShow(e.target.checked)}
-            className="w-3 h-3 accent-teal-600"
+            checked={dontShowToday}
+            onChange={(e) => setDontShowToday(e.target.checked)}
+            className="h-3 w-3 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
           />
-          <span className="text-[10px] text-slate-400">
-            今日不再弹出 · Don&apos;t show again today
-          </span>
+          {zh ? '今日不再弹出' : 'Don\u2019t show again today'}
         </label>
+        <button onClick={close} className="text-[11px] font-medium text-teal-700 hover:underline">
+          {zh ? '知道了' : 'Got it'}
+        </button>
       </div>
     </div>
-  );
+  )
 }
