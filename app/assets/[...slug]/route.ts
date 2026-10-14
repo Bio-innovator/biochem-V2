@@ -6,16 +6,17 @@ import sharp from 'sharp';
 export const runtime = 'nodejs';
 export const dynamic = 'force-static';
 
-// 「网站用图」/「图片补充」/「最新用图」文件夹中的素材，以白名单 slug 对外提供
+// 「网站用图」/「图片补充」/「最新用图」/「最终的附加信息」/「2026年10月14」文件夹中的素材，以白名单 slug 对外提供
 const DEFAULT_DIR = path.join(process.cwd(), '网站用图');
 const SUPPLEMENT_DIR = path.join(process.cwd(), '图片补充');
 const LATEST_DIR = path.join(process.cwd(), '最新用图');
 const FINAL_DIR = path.join(process.cwd(), '最终的附加信息');
+const HONOR_DIR = path.join(process.cwd(), '2026年10月14');
 
 interface AssetEntry {
   file: string;
   kind: 'image' | 'pdf';
-  dir?: 'supplement' | 'latest' | 'final'; // 默认从「网站用图」读取；supplement 从「图片补充」、latest 从「最新用图」、final 从「最终的附加信息」读取
+  dir?: 'supplement' | 'latest' | 'final' | 'honor'; // 默认从「网站用图」读取；supplement 从「图片补充」、latest 从「最新用图」、final 从「最终的附加信息」、honor 从「2026年10月14」读取
 }
 
 const ASSETS: Record<string, AssetEntry> = {
@@ -54,6 +55,8 @@ const ASSETS: Record<string, AssetEntry> = {
   // —— 以下为「最终的附加信息」文件夹中的素材 ——
   'ctb-regional-award':   { file: 'CTB REGIONAL HIGH DISTINCTION.pdf', kind: 'pdf', dir: 'final' },
   'ctb-completion':       { file: 'CTB completion.pdf', kind: 'pdf', dir: 'final' },
+  // —— 以下为「2026年10月14」文件夹中的素材 ——
+  'principal-cert': { file: '校长荣誉.pdf', kind: 'pdf', dir: 'honor' },
 };
 
 export async function GET(
@@ -73,6 +76,8 @@ export async function GET(
       ? LATEST_DIR
       : entry.dir === 'final'
       ? FINAL_DIR
+      : entry.dir === 'honor'
+      ? HONOR_DIR
       : DEFAULT_DIR;
   const filePath = path.join(baseDir, entry.file);
   if (!filePath.startsWith(baseDir)) {
